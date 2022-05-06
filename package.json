@@ -4,8 +4,20 @@
   "description": "red tetris",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack-dev-server"
+    "start": "node src/server/server.ts"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^17.0.31"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.8.1",
+    "babel-cli": "^6.26.0",
+    "babel-preset-react-app": "^3.1.2",
+    "express": "^4.18.1",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
+    "redux": "^4.2.0"
+  }
 }
