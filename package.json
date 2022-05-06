@@ -1,0 +1,11 @@
+{
+  "name": "redtetris",
+  "version": "1.0.0",
+  "description": "red tetris",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server"
+  },
+  "author": "",
+  "license": "ISC"
+}
