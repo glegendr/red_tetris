@@ -30,12 +30,20 @@ const initApp = (app, params, cb) => {
   })
 }
 
-const initEngine = (io, game) => {
+
+const initEngine = (io) => {
   io.on('connection', function (socket) {
+    socket.join("room 01");
 
-    game.addPlayer(new Player(socket));
 
+    // function pingGame() {
+    //   setTimeout(() => {
+    //     socket.emit('action', { type: SOCKET_START_GAME_RES, game: { ...game } });
+    //     pingGame();
+    //   }, 1000);
+    // }
 
+    // pingGame();
     loginfo("Socket connected: " + socket.id)
     socket.on('action', (action) => {
       switch (action.type) {
@@ -43,7 +51,9 @@ const initEngine = (io, game) => {
           socket.emit('action', { type: SOCKET_PONG });
           break;
         case SOCKET_START_GAME:
-          socket.emit('action', { type: SOCKET_START_GAME_RES, game: game });
+          console.log("GOOO !");
+          // game.launchGame(1000);
+          // socket.emit('action', { type: SOCKET_START_GAME_RES, game: { ...game } });
           break;
       }
     })
@@ -52,7 +62,6 @@ const initEngine = (io, game) => {
 
 export function create(params) {
   const promise = new Promise((resolve, reject) => {
-    const game = new Game();
     const app = require('http').createServer()
     initApp(app, params, () => {
       const io = require('socket.io')(app)
@@ -65,7 +74,7 @@ export function create(params) {
         cb()
       }
 
-      initEngine(io, game)
+      initEngine(io)
       resolve({ stop })
     })
   })

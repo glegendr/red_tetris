@@ -5,7 +5,6 @@ import Game from './game'
 const App = ({ message }) => {
   return (
     <span>
-      {message}
       <Game />
     </span>
   )
