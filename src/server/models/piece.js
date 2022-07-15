@@ -1,3 +1,5 @@
+import React from 'react'
+
 export default class Piece {
     constructor(pieceId, rotationNb) {
         // DEFINE PIECE
@@ -11,6 +13,7 @@ export default class Piece {
                     [false, false, false, false]
                 ]
                 this.length = 4;
+                this.color = '#00ffff';
                 break;
             // Reverse L
             case 1:
@@ -20,6 +23,7 @@ export default class Piece {
                     [false, false, false]
                 ]
                 this.length = 3;
+                this.color = '#0000ff';
                 break;
             // L
             case 2:
@@ -29,6 +33,7 @@ export default class Piece {
                     [false, false, false]
                 ]
                 this.length = 3;
+                this.color = '#ffaa00';
                 break;
             // Square
             case 3:
@@ -37,6 +42,7 @@ export default class Piece {
                     [true, true]
                 ];
                 this.length = 2;
+                this.color = '#ffff00';
                 break;
             // Reverse Z
             case 4:
@@ -46,6 +52,7 @@ export default class Piece {
                     [false, false, false]
                 ];
                 this.length = 3;
+                this.color = '#00ff00';
                 break;
             // T
             case 5:
@@ -55,6 +62,7 @@ export default class Piece {
                     [false, false, false]
                 ];
                 this.length = 3;
+                this.color = '#9900ff';
                 break;
             // Z
             case 6:
@@ -64,7 +72,8 @@ export default class Piece {
                     [false, false, false]
                 ];
                 this.length = 3;
-                return
+                this.color = '#ff0000';
+                break;
         }
 
         // ROTATE PIECE

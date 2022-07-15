@@ -1,24 +1,27 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { useStore } from 'react-redux'
+import { createGame } from '../actions/socket'
 
-const Game = ({ piece }) => {
+const Game = ({ game }) => {
+    let store = useStore();
+    console.log(game)
+
+    React.useEffect(() => {
+        store.dispatch(createGame());
+    }, [])
+
     return (
         <div>
-            {...piece.form.map(col => <div>{...col.reduce((acc, full) => {
-                if (full) {
-                    acc.push('O')
-                } else {
-                    acc.push('.')
-                }
-                return acc
-            }, [])}</div>)}
+            ZZCC
+            {game && game.players && game.players[0].render}
         </div>
     )
 }
 
 const mapStateToProps = (state) => {
     return {
-        piece: state.socket.piece,
+        game: state.socket.game,
     }
 }
 

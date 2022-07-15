@@ -7,7 +7,7 @@ import { Provider } from 'react-redux'
 import reducer from './reducers'
 import App from './containers/app'
 import { alert } from './actions/alert'
-import { ping } from './actions/socket'
+import { createGame, ping } from './actions/socket'
 import io from 'socket.io-client'
 import params from '../../params'
 

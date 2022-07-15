@@ -1,2 +1,6 @@
-package-lock.json
+*~
+*.swp
+*.swo
+log
+tmp
 node_modules

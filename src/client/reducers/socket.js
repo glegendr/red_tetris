@@ -1,10 +1,15 @@
-import { SOCKET_CONNECT } from "../actions/socket"
+import { SOCKET_CONNECT, SOCKET_START_GAME_RES } from "../actions/socket"
 
-const reducer = (state = {} , action) => {
-  switch(action.type){
+const reducer = (state = {}, action) => {
+  switch (action.type) {
     case SOCKET_CONNECT:
       return state
-    default: 
+    case SOCKET_START_GAME_RES:
+      return {
+        ...state,
+        game: action.game
+      }
+    default:
       return state
   }
 }

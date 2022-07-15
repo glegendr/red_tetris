@@ -4,7 +4,10 @@ import Game from './game'
 
 const App = ({ message }) => {
   return (
-    <span><Game /></span>
+    <span>
+      {message}
+      <Game />
+    </span>
   )
 }
 

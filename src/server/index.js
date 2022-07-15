@@ -1,6 +1,8 @@
 import fs from 'fs'
 import debug from 'debug'
-import { SOCKET_PING, SOCKET_PONG } from '../client/actions/socket'
+import { SOCKET_PING, SOCKET_PONG, SOCKET_START_GAME_RES, SOCKET_START_GAME } from '../client/actions/socket'
+import Game from './models/game'
+import Player from './models/player'
 
 const logerror = debug('tetris:error')
   , loginfo = debug('tetris:info')
@@ -28,12 +30,21 @@ const initApp = (app, params, cb) => {
   })
 }
 
-const initEngine = io => {
+const initEngine = (io, game) => {
   io.on('connection', function (socket) {
+
+    game.addPlayer(new Player(socket));
+
+
     loginfo("Socket connected: " + socket.id)
     socket.on('action', (action) => {
-      if (action.type === SOCKET_PING) {
-        socket.emit('action', { type: SOCKET_PONG })
+      switch (action.type) {
+        case SOCKET_PING:
+          socket.emit('action', { type: SOCKET_PONG });
+          break;
+        case SOCKET_START_GAME:
+          socket.emit('action', { type: SOCKET_START_GAME_RES, game: game });
+          break;
       }
     })
   })
@@ -41,6 +52,7 @@ const initEngine = io => {
 
 export function create(params) {
   const promise = new Promise((resolve, reject) => {
+    const game = new Game();
     const app = require('http').createServer()
     initApp(app, params, () => {
       const io = require('socket.io')(app)
@@ -53,7 +65,7 @@ export function create(params) {
         cb()
       }
 
-      initEngine(io)
+      initEngine(io, game)
       resolve({ stop })
     })
   })
