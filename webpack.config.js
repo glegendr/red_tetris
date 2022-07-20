@@ -1,21 +1,52 @@
-var path = require('path');
+const HtmlWebPackPlugin = require("html-webpack-plugin");
+const path = require('path');
 
 module.exports = {
-  entry: './src/client/index.js',
-
+  entry: './src/client/index.tsx',
   output: {
-    path: path.join(__dirname, 'build'),
+    path: path.resolve(__dirname, 'build'),
     filename: 'bundle.js'
   },
-
+  resolve: {
+    extensions: [".js", ".json", ".ts", ".tsx"],
+    alias: {'@src': path.join(__dirname, "src")}
+  },
   module: {
-    loaders: [{
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'babel',
-      query:{
-        presets: ["es2015", "react", "stage-0"]
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        loader: 'ts-loader',
+      },
+      {
+        test: /\.(js|jsx)$/,
+        use: {
+          loader: "babel-loader"
+        }
+      },
+      {
+        test: /\.html$/,
+        use: [{
+          loader: "html-loader",
+          options: {
+            minimize: true
+          }
+        }]
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.(mp3|otf|jpg|ttf|png|svg)/,
+        loader: 'file-loader'
       }
-    }]
-  }
+    ]
+  },
+  plugins: [
+    new HtmlWebPackPlugin({
+      template: "./src/client/index.html",
+      filename: "./index.html"
+    })
+  ]
 };

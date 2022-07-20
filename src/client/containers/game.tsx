@@ -1,13 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { useStore } from 'react-redux'
-import { createGame } from '../actions/socket'
-import Player from '../../server/models/player'
+import { addPlayerToGame } from '../actions/socket'
 
 function renderPlayer(game) {
     if (!game || !game.players || !game.players[0])
         return undefined;
-    return new Player(game.players[0]).render();
+    return game.players[0].render();
 }
 
 const Tetris = ({ game }) => {
@@ -15,7 +14,7 @@ const Tetris = ({ game }) => {
     console.log(game)
 
     React.useEffect(() => {
-        store.dispatch(createGame());
+        store.dispatch(addPlayerToGame('testGame01'));
     }, [])
 
     return (

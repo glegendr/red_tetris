@@ -13,11 +13,12 @@ const Tile = styled.div`
 
 
 export default class Terrain {
+
     constructor(height, width) {
-        if (width == undefined && height instanceof Object) {
-            Object.assign(this, height);
-            return
-        }
+        // if (width == undefined && height instanceof Object) {
+        //     Object.assign(this, height);
+        //     return
+        // }
         this.tiles = new Array(height).fill(new Array(width).fill(undefined));
         this.width = width;
         this.height = height;
@@ -26,8 +27,8 @@ export default class Terrain {
     render() {
         return this.tiles.map((row, y) => {
             let row_ret = row.reduce((acc, color, x) => {
-                acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color}/>)
-                return acc
+                acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color}/>);
+                return acc;
             }, []);
             return <div style={{ display: 'flex' }}>{row_ret}</div>
         });

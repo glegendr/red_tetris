@@ -1,7 +1,7 @@
-import React from 'react'
 import Terrain from './terrain'
 
 export default class Player {
+
     constructor(id_or_json, emit) {
         if (id_or_json instanceof Object) {
             Object.assign(this, id_or_json);
@@ -19,9 +19,6 @@ export default class Player {
 
         // player's socket id
         this.id = id_or_json;
-
-        // current piece
-        this.currentPiece = undefined;
 
         // socket.emit function
         this.emit = emit;

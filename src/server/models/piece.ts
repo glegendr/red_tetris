@@ -1,6 +1,7 @@
 import React from 'react'
 
 export default class Piece {
+
     constructor(pieceId, rotationNb) {
         // DEFINE PIECE
         switch (pieceId % 7) {

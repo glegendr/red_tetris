@@ -1,8 +1,8 @@
 import fs from 'fs'
 import debug from 'debug'
-import { SOCKET_PING, SOCKET_PONG, SOCKET_START_GAME_RES, SOCKET_START_GAME } from '../client/actions/socket'
-import Game from './models/game'
-import Player from './models/player'
+import GamesMonitor, { GAME_MONITOR_ADD_PLAYER } from './models/gamesMonitor'
+
+const gamesMonitor = new GamesMonitor();
 
 const logerror = debug('tetris:error')
   , loginfo = debug('tetris:info')
@@ -33,27 +33,12 @@ const initApp = (app, params, cb) => {
 
 const initEngine = (io) => {
   io.on('connection', function (socket) {
-    socket.join("room 01");
 
-
-    // function pingGame() {
-    //   setTimeout(() => {
-    //     socket.emit('action', { type: SOCKET_START_GAME_RES, game: { ...game } });
-    //     pingGame();
-    //   }, 1000);
-    // }
-
-    // pingGame();
     loginfo("Socket connected: " + socket.id)
     socket.on('action', (action) => {
       switch (action.type) {
-        case SOCKET_PING:
-          socket.emit('action', { type: SOCKET_PONG });
-          break;
-        case SOCKET_START_GAME:
-          console.log("GOOO !");
-          // game.launchGame(1000);
-          // socket.emit('action', { type: SOCKET_START_GAME_RES, game: { ...game } });
+        case JOIN_GAME:
+          gamesMonitor.dispatch({ type: GAME_MONITOR_ADD_PLAYER, gameName: action.gameName }, socket)
           break;
       }
     })

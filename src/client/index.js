@@ -9,7 +9,7 @@ import App from './containers/app'
 import { alert } from './actions/alert'
 import { createGame, ping } from './actions/socket'
 import io from 'socket.io-client'
-import params from '../../params'
+import params from '../params'
 
 const initialState = {}
 
