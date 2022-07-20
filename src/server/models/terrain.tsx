@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components';
 
-const Tile = styled.div`
+const Tile = styled.div<{ color: string, x: number, y: number}>`
     height: 30px;
     width: 30px;
     background-color: ${p => p.color};
@@ -14,7 +14,11 @@ const Tile = styled.div`
 
 export default class Terrain {
 
-    constructor(height, width) {
+    height: number;
+    width: number;
+    tiles: string[][];
+
+    constructor(height: number, width: number) {
         // if (width == undefined && height instanceof Object) {
         //     Object.assign(this, height);
         //     return
@@ -26,7 +30,7 @@ export default class Terrain {
 
     render() {
         return this.tiles.map((row, y) => {
-            let row_ret = row.reduce((acc, color, x) => {
+            let row_ret = row.reduce((acc: JSX.Element[], color, x) => {
                 acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color}/>);
                 return acc;
             }, []);

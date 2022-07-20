@@ -1,17 +1,18 @@
-import React from 'react'
+import * as React from 'react'
 import { connect } from 'react-redux'
+import { GlobalState } from '../reducers'
 import Game from './game'
 
-const App = ({ message }) => {
+const App = (props: { message?: string }) => {
   return (
     <span>
-      {message}
+      {props.message}
       <Game />
     </span>
   )
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: GlobalState) => {
   return {
     message: state.alert.message
   }

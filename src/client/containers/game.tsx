@@ -1,20 +1,23 @@
-import React from 'react'
+import Game from '@src/server/models/game';
+import * as React from 'react'
 import { connect } from 'react-redux'
-import { useStore } from 'react-redux'
-import { addPlayerToGame } from '../actions/socket'
+import { GlobalState } from '../reducers';
+import { useDispatch } from 'react-redux'
+import { addPlayerToGame } from '../actions/socket';
 
-function renderPlayer(game) {
+function renderPlayer(game?: Game) {
     if (!game || !game.players || !game.players[0])
         return undefined;
     return game.players[0].render();
 }
 
-const Tetris = ({ game }) => {
-    let store = useStore();
+const Tetris = (props: { game?: Game }) => {
+    const { game } = props; 
     console.log(game)
+    const dispatch = useDispatch();
 
     React.useEffect(() => {
-        store.dispatch(addPlayerToGame('testGame01'));
+        dispatch(addPlayerToGame('testGame01'));
     }, [])
 
     return (
@@ -24,7 +27,7 @@ const Tetris = ({ game }) => {
     )
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: GlobalState) => {
     return {
         game: state.socket.game,
     }

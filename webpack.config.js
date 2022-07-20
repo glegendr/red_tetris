@@ -43,10 +43,10 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new HtmlWebPackPlugin({
-      template: "./src/client/index.html",
-      filename: "./index.html"
-    })
-  ]
+  // plugins: [
+  //   new HtmlWebPackPlugin({
+  //     template: "./src/client/index.html",
+  //     filename: "./index.html"
+  //   })
+  // ]
 };

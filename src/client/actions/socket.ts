@@ -1,18 +1,14 @@
+import { Action } from "@src/common/actions"
 
-export const SOCKET_CONNECT = 'SOCKET_CONNECT'
-export const SOCKET_PING = 'SOCKET_PING'
-export const SOCKET_PONG = 'SOCKET_PONG'
-export const JOIN_GAME = 'JOIN_GAME'
-
-export const ping = () => {
+export const ping = (): Action => {
   return {
-    type: SOCKET_PING
+    type: 'SOCKET_PING'
   }
 }
 
-export const addPlayerToGame = (name: string) => {
+export const addPlayerToGame = (name: string): Action => {
   return {
-    type: JOIN_GAME,
-    gameName: name
+    type: 'JOIN_GAME',
+    payload: name
   }
 }

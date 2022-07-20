@@ -1,4 +1,3 @@
-import React from 'react'
 import Piece from './piece';
 import Player from './player';
 import Timeout = NodeJS.Timeout;
@@ -12,7 +11,7 @@ export default class Game {
     name: string;
     players: Player[];
     pieces: [Piece, number][];
-    host?: number;
+    host?: string;
     interval?: Timeout;
 
     constructor(name: string) {

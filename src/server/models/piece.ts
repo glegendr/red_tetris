@@ -1,8 +1,11 @@
-import React from 'react'
-
 export default class Piece {
 
-    constructor(pieceId, rotationNb) {
+    form: boolean[][];
+    length: number;
+    color: string;
+
+    constructor(pieceId: number, rotationNb: number) {
+
         // DEFINE PIECE
         switch (pieceId % 7) {
             // line
@@ -66,7 +69,7 @@ export default class Piece {
                 this.color = '#9900ff';
                 break;
             // Z
-            case 6:
+            default:
                 this.form = [
                     [true, true, false],
                     [false, true, true],
@@ -84,7 +87,7 @@ export default class Piece {
     }
 
     rotate() {
-        let newForm = [];
+        let newForm: boolean[][] = [];
         for (let i = 0; i < this.length; i++) {
             for (let y = this.length - 1; y >= 0; y--) {
                 if (newForm[i] == undefined) {
