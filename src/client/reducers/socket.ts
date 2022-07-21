@@ -19,6 +19,11 @@ const reducer = (state: SocketState = initSocketState(), action: Action) => {
   switch (action.type) {
     case 'SOCKET_CONNECT':
       return state
+    case 'SRV_EMIT_GAME':
+      return {
+        ...state,
+        game: action.payload
+      }
     default:
       return state
   }

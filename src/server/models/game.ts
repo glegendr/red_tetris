@@ -31,7 +31,7 @@ export default class Game {
         this.interval = undefined;
     }
 
-    launchGame(time: number) {
+    launchGame(time?: number) {
         this.pieces = [[new Piece(rand(7), rand(4)), rand(10)]];
 
         for (let player of this.players) {
@@ -45,13 +45,22 @@ export default class Game {
                     console.log("DISPATCH")
                 }
             });
-        }, 500);
+        }, time ?? 500);
     }
 
     addPlayer(player: Player) {
         this.players.push(player);
         if (!this.host) {
             this.host = player.id;
+        }
+    }
+
+    short() {
+        return {
+            name: this.name,
+            players: this.players.map(p => p.short()),
+            pieces: this.pieces,
+            host: this.host
         }
     }
 }

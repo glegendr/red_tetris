@@ -1,3 +1,4 @@
+import { Socket } from 'socket.io';
 import Piece from './piece';
 import Terrain from './terrain'
 
@@ -7,10 +8,10 @@ export default class Player {
     piece?: [Piece, number, number];
     terrain: Terrain;
     id: string;
-    emit: (eventName: string | symbol, ...args: any[]) => boolean;
+    socket: Socket;
     alive: boolean;
 
-    constructor(id: string, emit: (eventName: string | symbol, ...args: any[]) => boolean) {
+    constructor(socket: Socket) {
         // current piece index in Server's piece list
         this.pieceIndex = 0;
 
@@ -21,10 +22,10 @@ export default class Player {
         this.terrain = new Terrain(20, 10);
 
         // player's socket id
-        this.id = id;
+        this.id = socket.id;
 
         // socket.emit function
-        this.emit = emit;
+        this.socket = socket;
 
         // is the player alive
         this.alive = true;
@@ -32,5 +33,14 @@ export default class Player {
 
     render() {
         return this.terrain.render()
+    }
+
+    short() {
+        return {
+            id: this.id,
+            piece: this.piece,
+            terrain: this.terrain,
+            alive: this.alive
+        }
     }
 }

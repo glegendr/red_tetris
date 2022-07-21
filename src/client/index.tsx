@@ -8,6 +8,12 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { Action } from '@src/common/actions'
 
+function initSocketReducer(store: any)  {
+  const state: GlobalState = store.getState();
+  const dispatch = store.dispatch;
+  state.socket.socket.on('response', (action: Action) => dispatch(action));
+}
+
 const socketIoMiddleWare = (store: any) => (next: any) => (action: Action) => {
   const state: GlobalState = store.getState();
   const socket = state.socket.socket;
@@ -23,6 +29,8 @@ const store = createStore(
     createLogger()
   )
 )
+
+initSocketReducer(store);
 
 ReactDOM.render((
   <Provider store={store}>

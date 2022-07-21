@@ -13,6 +13,11 @@ const initEngine = (io: any) => {
     io.on('connection', function (socket: Socket) {
 
     loginfo("Socket connected: " + socket.id)
+
+    socket.on('disconnect', () => {
+      gamesMonitor.dispatch({ type: 'GAME_MONITOR_DISCONNECT_PLAYER' }, socket)
+    });
+
     socket.on('action', (action: Action) => {
       switch (action.type) {
         case 'SOCKET_JOIN_GAME':

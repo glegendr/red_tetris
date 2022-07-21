@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import styled from 'styled-components';
 
 const Tile = styled.div<{ color: string, x: number, y: number}>`
@@ -18,14 +18,17 @@ export default class Terrain {
     width: number;
     tiles: string[][];
 
-    constructor(height: number, width: number) {
-        // if (width == undefined && height instanceof Object) {
-        //     Object.assign(this, height);
-        //     return
-        // }
+    constructor(height?: number | Object, width?: number) {
+        if (height instanceof Object) {
+            this.width = width ?? 10;
+            this.height = 20;
+            this.tiles = new Array(this.height).fill(new Array(this.width).fill(undefined));
+            Object.assign(this, height);
+            return
+        }
         this.tiles = new Array(height).fill(new Array(width).fill(undefined));
-        this.width = width;
-        this.height = height;
+        this.width = width ?? 10;
+        this.height = height ?? 20;
     }
 
     render() {
