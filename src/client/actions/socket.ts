@@ -8,7 +8,7 @@ export const ping = (): Action => {
 
 export const addPlayerToGame = (name: string): Action => {
   return {
-    type: 'JOIN_GAME',
+    type: 'SOCKET_JOIN_GAME',
     payload: name
   }
 }

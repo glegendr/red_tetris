@@ -25,6 +25,6 @@ export default class GamesMonitor {
         this.games.push(newGame);
         break;
     }
-    console.log(this);
+    console.log("THIS", this);
   };
 }

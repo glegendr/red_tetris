@@ -1,45 +1,21 @@
-import fs from 'fs'
 import debug from 'debug'
 import GamesMonitor from './models/gamesMonitor'
 import { Socket } from 'socket.io';
+import { Action } from '@src/common/actions';
+import * as express from 'express';
+import {Server} from 'http';
 
 const gamesMonitor = new GamesMonitor();
 
-const logerror = debug('tetris:error')
-  , loginfo = debug('tetris:info')
-
-const initApp = (app: any, params: any, cb: any) => {
-  // const { host, port } = params
-  const handler = (req: any, res: any) => {
-    const file = req.url === '/bundle.js' ? '/../../build/bundle.js' : '/../../index.html'
-    fs.readFile(__dirname + file, (err, data) => {
-      if (err) {
-        logerror(err)
-        res.writeHead(500)
-        return res.end('Error loading index.html')
-      }
-      res.writeHead(200)
-      res.end(data)
-    })
-  }
-
-  app.on('request', handler)
-
-  app.listen({ host: params?.host, port: params?.port }, () => {
-    loginfo(params?.host, params?.port, params)
-    loginfo(`tetris listen on ${params?.url}`)
-    cb()
-  })
-}
-
+const loginfo = debug('tetris:info')
 
 const initEngine = (io: any) => {
-  io.on('connection', function (socket: Socket) {
+    io.on('connection', function (socket: Socket) {
 
     loginfo("Socket connected: " + socket.id)
-    socket.on('action', (action) => {
+    socket.on('action', (action: Action) => {
       switch (action.type) {
-        case 'JOIN_GAME':
+        case 'SOCKET_JOIN_GAME':
           gamesMonitor.dispatch({ type: 'GAME_MONITOR_ADD_PLAYER', payload: action.payload }, socket)
           break;
       }
@@ -48,22 +24,16 @@ const initEngine = (io: any) => {
 }
 
 export function create(params: any) {
-  const promise = new Promise((resolve, reject) => {
-    const app = require('http').createServer()
-    initApp(app, params, () => {
-      const io = require('socket.io')(app)
-      const stop = (cb: () => void) => {
-        io.close()
-        app.close(() => {
-          app.unref()
-        })
-        loginfo(`Engine stopped.`)
-        cb()
-      }
+  const app = express();
 
-      initEngine(io)
-      resolve({ stop })
-    })
-  })
-  return promise
+  app.use(express.static('build'));
+  const server = new Server(app);
+
+  const io = require('socket.io')(server);
+
+  initEngine(io)
+
+  server.listen(params.port, () => {
+    console.log('Listening on:', params.port);
+  });
 }

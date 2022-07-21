@@ -3,7 +3,7 @@ export type ActionType
     | 'SOCKET_CONNECT'
     | 'SOCKET_PING'
     | 'SOCKET_PONG'
-    | 'JOIN_GAME'
+    | 'SOCKET_JOIN_GAME'
     | 'ALERT_POP'
 
 export type Action = {

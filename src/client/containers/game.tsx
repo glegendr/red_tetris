@@ -13,7 +13,6 @@ function renderPlayer(game?: Game) {
 
 const Tetris = (props: { game?: Game }) => {
     const { game } = props; 
-    console.log(game)
     const dispatch = useDispatch();
 
     React.useEffect(() => {
