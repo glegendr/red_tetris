@@ -23,6 +23,9 @@ const initEngine = (io: any) => {
         case 'SOCKET_JOIN_GAME':
           gamesMonitor.dispatch({ type: 'GAME_MONITOR_ADD_PLAYER', payload: action.payload }, socket)
           break;
+        case 'SOCKET_LAUNCH_GAME':
+          gamesMonitor.dispatch({ type: 'GAME_MONITOR_LAUNCH_GAME' }, socket)
+          break;
       }
     })
   })

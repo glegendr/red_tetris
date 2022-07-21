@@ -6,6 +6,12 @@ export const ping = (): Action => {
   }
 }
 
+export const launchGame = (): Action => {
+  return {
+    type: 'SOCKET_LAUNCH_GAME',
+  }
+}
+
 export const addPlayerToGame = (name: string): Action => {
   return {
     type: 'SOCKET_JOIN_GAME',

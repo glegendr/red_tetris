@@ -1,5 +1,8 @@
-export default class Piece {
+function rand(max: number) {
+    return Math.floor(Math.random() * max);
+}
 
+export default class Piece {
     form: boolean[][];
     length: number;
     color: string;
@@ -97,5 +100,17 @@ export default class Piece {
             }
         }
         return newForm;
+    }
+
+    static genRandomPiece(width: number) {
+        let piece = new Piece(rand(7), rand(4));
+        let x = rand(width - 1);
+        while (x + piece.length > width && x > 0) {
+            x -= 1;
+        }
+        return {
+            piece,
+            x
+        }
     }
 }

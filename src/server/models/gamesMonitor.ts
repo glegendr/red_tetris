@@ -29,6 +29,15 @@ export default class GamesMonitor {
     }
 
     switch (action.type) {
+      case 'GAME_MONITOR_LAUNCH_GAME': {
+          let game: Game | undefined = this.games.find(g => g.host == socket.id);
+  
+          if (game) {
+            game.launchGame(1000);
+          }
+
+          break;
+      }
       case 'GAME_MONITOR_DISCONNECT_PLAYER':
         removePlayer();
         break;

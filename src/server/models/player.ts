@@ -28,7 +28,27 @@ export default class Player {
         this.socket = socket;
 
         // is the player alive
-        this.alive = true;
+        this.alive = false;
+    }
+
+    fall(): boolean {
+        if (this.piece) {
+            for (let i = this.piece[0].length - 1; i >= 0; i--) {
+                if (this.piece[0].form[i].some(tile => tile)) {
+                    if (this.piece[2] + i >= this.terrain.height || this.piece[0].form[i].some((tile, x) => tile && this.terrain.tiles[(this.piece?.[2] ?? 0) + i][(this.piece?.[1] ?? 0) + x] && !this.piece?.[0].form[i + 1]?.[x])) {
+                        if (this.piece[2] == 0)
+                            this.alive = false;
+                        return true;
+                    }
+                }
+            }
+            if (this.piece[2] !== 0) {
+                this.terrain.replacePiece(this.piece[0], this.piece[1], this.piece[2] - 1);
+            }
+            this.terrain.replacePiece(this.piece[0], this.piece[1], this.piece[2], this.piece[0].color);
+            this.piece[2] += 1;
+        }
+        return false
     }
 
     render() {
@@ -42,5 +62,13 @@ export default class Player {
             terrain: this.terrain,
             alive: this.alive
         }
+    }
+
+    reset(piece: [Piece, number]) {
+        this.terrain = new Terrain(20, 10);
+        this.alive = true;
+        this.pieceIndex = 0;
+        this.piece = [...piece, 0];
+
     }
 }
