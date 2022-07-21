@@ -1,7 +1,7 @@
 import debug from 'debug'
 import GamesMonitor from './models/gamesMonitor'
 import { Socket } from 'socket.io';
-import { Action } from '@src/common/actions';
+import { Action, ActionType } from '@src/common/actions';
 import * as express from 'express';
 import {Server} from 'http';
 
@@ -23,8 +23,10 @@ const initEngine = (io: any) => {
         case 'SOCKET_JOIN_GAME':
           gamesMonitor.dispatch({ type: 'GAME_MONITOR_ADD_PLAYER', payload: action.payload }, socket)
           break;
-        case 'SOCKET_LAUNCH_GAME':
-          gamesMonitor.dispatch({ type: 'GAME_MONITOR_LAUNCH_GAME' }, socket)
+        default:
+          let type = action.type.substring(6);
+          type = 'GAME_MONITOR' + type;
+          gamesMonitor.dispatch({ type: type as ActionType, payload: action.payload }, socket)
           break;
       }
     })

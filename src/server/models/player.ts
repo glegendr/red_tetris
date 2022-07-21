@@ -2,10 +2,16 @@ import { Socket } from 'socket.io';
 import Piece from './piece';
 import Terrain from './terrain'
 
+type Position = {
+    x: number;
+    y: number;
+}
+
 export default class Player {
 
     pieceIndex: number;
-    piece?: [Piece, number, number];
+    piece?: Piece;
+    position: Position;
     terrain: Terrain;
     id: string;
     socket: Socket;
@@ -15,8 +21,11 @@ export default class Player {
         // current piece index in Server's piece list
         this.pieceIndex = 0;
 
-        // current piece and his position
+        // current piece
         this.piece = undefined
+
+        // current piece position
+        this.position = { x: 0, y: 0 };
 
         // player's game terrain
         this.terrain = new Terrain(20, 10);
@@ -33,20 +42,20 @@ export default class Player {
 
     fall(): boolean {
         if (this.piece) {
-            for (let i = this.piece[0].length - 1; i >= 0; i--) {
-                if (this.piece[0].form[i].some(tile => tile)) {
-                    if (this.piece[2] + i >= this.terrain.height || this.piece[0].form[i].some((tile, x) => tile && this.terrain.tiles[(this.piece?.[2] ?? 0) + i][(this.piece?.[1] ?? 0) + x] && !this.piece?.[0].form[i + 1]?.[x])) {
-                        if (this.piece[2] == 0)
+            for (let i = this.piece.length - 1; i >= 0; i--) {
+                if (this.piece.form[i].some(tile => tile)) {
+                    if (this.position.y + i >= this.terrain.height || this.piece.form[i].some((tile, x) => tile && this.terrain.tiles[this.position.y + i][this.position.x + x] && !this.piece?.form[i + 1]?.[x])) {
+                        if (this.position.y == 0)
                             this.alive = false;
                         return true;
                     }
                 }
             }
-            if (this.piece[2] !== 0) {
-                this.terrain.replacePiece(this.piece[0], this.piece[1], this.piece[2] - 1);
+            if (this.position.y !== 0) {
+                this.terrain.replacePiece(this.piece, this.position.x, this.position.y - 1);
             }
-            this.terrain.replacePiece(this.piece[0], this.piece[1], this.piece[2], this.piece[0].color);
-            this.piece[2] += 1;
+            this.terrain.replacePiece(this.piece, this.position.x, this.position.y, this.piece.color);
+            this.position.y += 1;
         }
         return false
     }
@@ -68,7 +77,34 @@ export default class Player {
         this.terrain = new Terrain(20, 10);
         this.alive = true;
         this.pieceIndex = 0;
-        this.piece = [...piece, 0];
+        this.piece = piece[0]
+        this.position = {
+            x: piece[1],
+            y: 0
+        };
+    }
 
+    moveLeft() {
+        if (this.piece) {
+            let terrain = new Terrain(JSON.parse(JSON.stringify(this.terrain)));
+            let x = this.position.x;
+            let y = this.position.y;
+            terrain.replacePiece(this.piece, x, y);
+            terrain.replacePiece(this.piece, x - 1, y, this.piece.color);
+            this.terrain = terrain;
+            this.position.x -= 1;
+        }
+    }
+
+    moveRight() {
+        if (this.piece) {
+            let terrain = new Terrain(JSON.parse(JSON.stringify(this.terrain)));
+            let x = this.position.x;
+            let y = this.position.y;
+            terrain.replacePiece(this.piece, x, y);
+            terrain.replacePiece(this.piece, x + 1, y, this.piece.color);
+            this.terrain = terrain;
+            this.position.x += 1;
+        }
     }
 }

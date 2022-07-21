@@ -28,31 +28,48 @@ export default class GamesMonitor {
       this.games = this.games.filter(g => g.host)
     }
 
+    let game: Game | undefined = this.games.find(g => g.players.some(p => p.id == socket.id));
+    let player: Player | undefined = undefined;
     switch (action.type) {
       case 'GAME_MONITOR_LAUNCH_GAME': {
-          let game: Game | undefined = this.games.find(g => g.host == socket.id);
-  
+          game = this.games.find(g => g.host == socket.id);
           if (game) {
             game.launchGame(1000);
           }
-
           break;
       }
       case 'GAME_MONITOR_DISCONNECT_PLAYER':
         removePlayer();
         break;
       case 'GAME_MONITOR_ADD_PLAYER':
-        removePlayer();
-        let game: Game | undefined = this.games.find(g => g.name == action.payload);
-        let player = new Player(socket);
-        if (game) {
-          game.addPlayer(player)
-        } else {
-          game = new Game(action.payload);
-          game.addPlayer(player);
-          this.games.push(game);
-        }
+          removePlayer();
+          game = this.games.find(g => g.name == action.payload);
+          player = new Player(socket);
+          if (game) {
+            game.addPlayer(player)
+          } else {
+            game = new Game(action.payload);
+            game.addPlayer(player);
+            this.games.push(game);
+          }
+          player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+          break;
+      case 'GAME_MONITOR_MOVE_LEFT':
+        player = game?.players.find(p => p.id == socket.id);
+        if (!game || !game.running || !player || !player.alive) break;
+        player.moveLeft();
         player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        break;
+      case 'GAME_MONITOR_MOVE_RIGHT':
+        player = game?.players.find(p => p.id == socket.id);
+        if (!game || !game.running || !player || !player.alive) break;
+        player.moveRight();
+        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        break;
+        break;
+      case 'GAME_MONITOR_ROTATE_RIGHT':
+        break;
+      case 'GAME_MONITOR_ROTATE_LEFT':
         break;
     }
   };

@@ -39,9 +39,6 @@ export default class Game {
 
         for (let player of this.players) {
             player.reset(this.pieces[0]);
-            // player.alive = true;
-            // player.pieceIndex = 0;
-            // player.piece = [...this.pieces[0], 0]
         }
 
         this.interval = setInterval(() => {
@@ -58,12 +55,16 @@ export default class Game {
                             let { piece, x } = Piece.genRandomPiece(10)
                             this.pieces.push([piece, x]);
                         }
-                        player.piece = [...this.pieces[player.pieceIndex], 0];
+                        player.piece = this.pieces[player.pieceIndex][0];
+                        player.position = {
+                            x: this.pieces[player.pieceIndex][1],
+                            y: 0
+                        }
                     }
                 }
             });
             this.players.forEach(player => player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: this.short() }))
-        }, 100);
+        }, time ?? 1000);
 
     }
 

@@ -1,14 +1,26 @@
-export type ActionType
-    = 'GAME_MONITOR_ADD_PLAYER'
-    | 'SOCKET_CONNECT'
+export type ActionType 
+    // WEB SOCKET
+    = 'SOCKET_CONNECT'
     | 'SOCKET_PING'
     | 'SOCKET_PONG'
     | 'SOCKET_JOIN_GAME'
     | 'SOCKET_LAUNCH_GAME'
-    | 'ALERT_POP'
+    | 'SOCKET_MOVE_RIGHT'
+    | 'SOCKET_MOVE_LEFT'
+    | 'SOCKET_ROTATE_RIGHT'
+    | 'SOCKET_ROTATE_LEFT'
+    // SERVER RESPONSE
     | 'SRV_EMIT_GAME'
+    // GAME MONITOR
     | 'GAME_MONITOR_DISCONNECT_PLAYER'
     | 'GAME_MONITOR_LAUNCH_GAME'
+    | 'GAME_MONITOR_ADD_PLAYER'
+    | 'GAME_MONITOR_MOVE_RIGHT'
+    | 'GAME_MONITOR_MOVE_LEFT'
+    | 'GAME_MONITOR_ROTATE_RIGHT'
+    | 'GAME_MONITOR_ROTATE_LEFT'
+    // RANDOM
+    | 'ALERT_POP'
 
 export type Action = {
     type: ActionType

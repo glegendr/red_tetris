@@ -49,7 +49,8 @@ export default class Terrain {
         piece.form.forEach((row, loc_y) => {
             row.forEach((tile, loc_x) => {
                 if (tile) {
-                    this.tiles[y + loc_y][x + loc_x] = by;
+                    // @ts-ignore
+                    this.tiles[y + loc_y][x + loc_x] = by ?? null;
                 }
             })
         });
