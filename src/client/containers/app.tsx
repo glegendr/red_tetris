@@ -1,20 +1,23 @@
+import Game from '@src/server/models/game'
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { GlobalState } from '../reducers'
-import Game from './game'
+import Connect from './connect'
+import Tetris from './tetris'
 
-const App = (props: { message?: string }) => {
+const App = (props: { game?: Game }) => {
+
   return (
     <span>
-      {props.message}
-      <Game />
+      <Connect />
+      <Tetris />
     </span>
   )
 }
 
 const mapStateToProps = (state: GlobalState) => {
   return {
-    message: state.alert.message
+    game: state.socket.game
   }
 }
 

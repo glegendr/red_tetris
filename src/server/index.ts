@@ -14,6 +14,8 @@ const initEngine = (io: any) => {
 
     loginfo("Socket connected: " + socket.id)
 
+    gamesMonitor.dispatch({ type: 'GAME_MONITOR_CONNECT_PLAYER' }, socket)
+
     socket.on('disconnect', () => {
       gamesMonitor.dispatch({ type: 'GAME_MONITOR_DISCONNECT_PLAYER' }, socket)
     });

@@ -84,4 +84,12 @@ export default class Game {
             running: this.running
         }
     }
+
+    resume() {
+        return {
+          name: this.name,
+          players: this.players.map(p => p.name),
+          running: this.running
+        }
+    }
 }

@@ -10,8 +10,8 @@ export type Position = {
 }
 
 const CenteredText = styled.div<{isTitle?: boolean}>`
-        text-align: center;
-        font-weight: ${p => p.isTitle ? 600 : 500};
+    text-align: center;
+    font-weight: ${p => p.isTitle ? 600 : 500};
 `
 
 export default class Player {
@@ -25,8 +25,9 @@ export default class Player {
     alive: boolean;
     playing: boolean;
     score: number;
+    name: string;
 
-    constructor(socket: Socket) {
+    constructor(socket: Socket, name: string) {
         // current piece index in Server's piece list
         this.pieceIndex = 0;
 
@@ -53,10 +54,13 @@ export default class Player {
 
         // player current score
         this.score = 0;
+
+        // player name
+        this.name = name;
     }
 
     static fromShort(player: Player): Player {
-        let ret = new Player({} as Socket);
+        let ret = new Player({} as Socket, '');
         Object.assign(ret, player);
         ret.terrain = new Terrain(player.terrain);
         return ret
@@ -83,8 +87,9 @@ export default class Player {
 
     render(other?: boolean) {
         return <div>
+            <CenteredText isTitle>{other ? this.name : 'You'}</CenteredText>
             {this.terrain.render(this.alive, { piece: this.piece, position: this.position }, other)}
-            <CenteredText isTitle={true}>Score</CenteredText>
+            <CenteredText isTitle>Score</CenteredText>
             <CenteredText>{this.score}</CenteredText>
         </div>
     }
@@ -96,7 +101,8 @@ export default class Player {
             position: this.position,
             terrain: this.terrain,
             alive: this.alive,
-            score: this.score
+            score: this.score,
+            name: this.name
         }
     }
 
@@ -140,8 +146,18 @@ export default class Player {
 
     moveDown() {
         if (!this.hasError(0, 1)) {
+            this.score += 1;
             this.position.y += 1;
         }
+    }
+
+    placePiece() {
+        let i = 0;
+        while (!this.hasError(0, 1)) {
+            this.position.y += 1;
+            i += 1;
+        }
+        this.score += i * 2
     }
 
     rotate() {

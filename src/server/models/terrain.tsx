@@ -11,7 +11,13 @@ const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean,
     border-right: 2px solid #171717;
     border-left: ${p => p.x == 0 ? '2px solid #171717' : ''};
     border-top: ${p => p.y == 0 ? '2px solid #171717' : ''};
+    border-radius: 3px;
 `;
+
+const Row = styled.div`
+    display: flex;
+    background-color: #171717;
+`
 
 
 export default class Terrain {
@@ -46,7 +52,7 @@ export default class Terrain {
                 acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={alive}/>);
                 return acc;
             }, []);
-            return <div style={{ display: 'flex' }}>{row_ret}</div>
+            return <Row>{row_ret}</Row>
         });
     }
 
@@ -64,7 +70,7 @@ export default class Terrain {
 
     deleteLines(): number {
         let newTiles = this.tiles.filter(row => row.some(tile => tile == undefined))
-        let score = ((this.height - newTiles.length) ** 2) * this.width
+        let score = ((this.height - newTiles.length) ** 2) * (this.width ** 2)
         while (newTiles.length < this.height)
             newTiles.unshift(new Array(this.width).fill(undefined));
         this.tiles = newTiles;

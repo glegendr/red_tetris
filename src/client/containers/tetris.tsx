@@ -3,7 +3,7 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { GlobalState } from '../reducers';
 import { useDispatch } from 'react-redux'
-import { addPlayerToGame, launchGame } from '../actions/socket';
+import { launchGame } from '../actions/socket';
 import styled from 'styled-components';
 import { Action } from '@src/common/actions';
 import Player from '@src/server/models/player';
@@ -27,15 +27,16 @@ function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket) {
 
 const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket }) => {
     const { game, socket } = props;
+    if (!game) return <></>
     const isHost = game && socket && game?.host == socket?.id;
     const dispatch: (act: Action) => void = useDispatch();
 
-    React.useEffect(() => {
-        dispatch(addPlayerToGame('testGame01'));
-    }, [])
-
     function handleKey(event: React.KeyboardEvent<HTMLDivElement>) {
         switch (event.keyCode) {
+            case 32:
+                // Space
+                dispatch({ type: 'SOCKET_FALL' });
+                break;
             case 40:
             case 83:
                 // Down

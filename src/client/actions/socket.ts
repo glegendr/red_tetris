@@ -12,9 +12,12 @@ export const launchGame = (): Action => {
   }
 }
 
-export const addPlayerToGame = (name: string): Action => {
+export const addPlayerToGame = (gameName: string, playerName?: string): Action => {
   return {
     type: 'SOCKET_JOIN_GAME',
-    payload: name
+    payload: {
+      gameName,
+      playerName
+    }
   }
 }
