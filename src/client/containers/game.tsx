@@ -4,9 +4,9 @@ import { connect } from 'react-redux'
 import { GlobalState } from '../reducers';
 import { useDispatch } from 'react-redux'
 import { addPlayerToGame, launchGame } from '../actions/socket';
-import Terrain from '@src/server/models/terrain';
 import styled from 'styled-components';
 import { Action } from '@src/common/actions';
+import Player from '@src/server/models/player';
 
 const PlayerContainer = styled.div`
     display: inline-block;
@@ -14,18 +14,19 @@ const PlayerContainer = styled.div`
 `
 
 function renderPlayer(game?: Game, socket?: SocketIOClient.Socket) {
-    let terrain = game?.players?.find(p => p.id == socket?.id)?.terrain;
-    if (!terrain) return undefined;
-    return <PlayerContainer>{new Terrain(terrain).render()}</PlayerContainer>;
+    let player = game?.players?.find(p => p.id == socket?.id);
+    if (!player) return undefined;
+
+    return <PlayerContainer>{Player.fromShort(player).render()}</PlayerContainer>;
 }
 
 function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket) {
     let players = game?.players?.filter(p => p.id !== socket?.id);
-    return players?.map(player => <PlayerContainer>{new Terrain(player.terrain).render(true)}</PlayerContainer>)
+    return players?.map(player => <PlayerContainer>{Player.fromShort(player).render(true)}</PlayerContainer>)
 }
 
 const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket }) => {
-    const { game, socket } = props; 
+    const { game, socket } = props;
     const isHost = game && socket && game?.host == socket?.id;
     const dispatch: (act: Action) => void = useDispatch();
 
@@ -35,6 +36,11 @@ const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket }) => {
 
     function handleKey(event: React.KeyboardEvent<HTMLDivElement>) {
         switch (event.keyCode) {
+            case 40:
+            case 83:
+                // Down
+                dispatch({ type: 'SOCKET_MOVE_DOWN' });
+                break;
             case 39:
             case 68:
                 // Right
@@ -62,7 +68,7 @@ const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket }) => {
         <div onKeyDown={handleKey} tabIndex={0}>
             {renderPlayer(game, socket)}
             {renderOtherPlayer(game, socket)}
-            {isHost && game?.players.every(p => !p.alive) && <button onClick={() => dispatch(launchGame())}>launch game</button>}
+            {isHost && !game?.running && <button onClick={() => dispatch(launchGame())}>launch game</button>}
         </div>
     )
 }

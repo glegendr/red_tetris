@@ -1,4 +1,3 @@
-import { createLogger } from 'redux-logger'
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import reducer, { GlobalState } from './reducers'
@@ -26,7 +25,6 @@ const store = createStore(
   reducer,
   applyMiddleware(
     socketIoMiddleWare,
-    createLogger()
   )
 )
 

@@ -1,11 +1,12 @@
 import * as React from 'react'
 import styled from 'styled-components';
 import Piece from './piece';
+import { Position } from './player';
 
-const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean}>`
-    height: ${p => p.other ? 10 : 25 }px;
-    width: ${p => p.other ? 10 : 25 }px;
-    background-color: ${p => p.color ?? 'black'};
+const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean, alive: boolean }>`
+    height: ${p => p.other ? 10 : 25}px;
+    width: ${p => p.other ? 10 : 25}px;
+    background-color: ${p => p.color ? p.alive ? p.color : '#919191' :'black'};
     border-bottom: 2px solid #171717;
     border-right: 2px solid #171717;
     border-left: ${p => p.x == 0 ? '2px solid #171717' : ''};
@@ -35,10 +36,14 @@ export default class Terrain {
         }
     }
 
-    render(other?: boolean) {
+    render(alive: boolean, pieceInfo?: { piece?: Piece, position: Position }, other?: boolean) {
         return this.tiles.map((row, y) => {
             let row_ret = row.reduce((acc: JSX.Element[], color, x) => {
-                acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other}/>);
+                if (!color && pieceInfo?.piece) {
+                    if (pieceInfo.piece.form[y - pieceInfo.position.y]?.[x - pieceInfo.position.x])
+                    color = pieceInfo.piece.color;
+                }
+                acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={alive}/>);
                 return acc;
             }, []);
             return <div style={{ display: 'flex' }}>{row_ret}</div>
@@ -55,5 +60,14 @@ export default class Terrain {
             })
         });
 
+    }
+
+    deleteLines(): number {
+        let newTiles = this.tiles.filter(row => row.some(tile => tile == undefined))
+        let score = ((this.height - newTiles.length) ** 2) * this.width
+        while (newTiles.length < this.height)
+            newTiles.unshift(new Array(this.width).fill(undefined));
+        this.tiles = newTiles;
+        return score
     }
 }

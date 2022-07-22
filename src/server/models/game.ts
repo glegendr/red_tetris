@@ -42,7 +42,7 @@ export default class Game {
         }
 
         this.interval = setInterval(() => {
-            if (this.players.every(p => !p.alive)) {
+            if (this.players.filter(p => p.playing).every(p => !p.alive) || (this.players.filter(p => p.alive && p.playing).length == 1 && this.players.filter(p => p.playing).length > 1)) {
                 this.running = false;
                 clearInterval(this.interval);
                 this.interval = undefined;
@@ -78,9 +78,10 @@ export default class Game {
     short() {
         return {
             name: this.name,
-            players: this.players.map(p => p.short()),
+            players: this.players.filter(p => p.playing).map(p => p.short()),
             pieces: this.pieces,
-            host: this.host
+            host: this.host,
+            running: this.running
         }
     }
 }

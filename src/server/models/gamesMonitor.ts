@@ -32,28 +32,34 @@ export default class GamesMonitor {
     let player: Player | undefined = undefined;
     switch (action.type) {
       case 'GAME_MONITOR_LAUNCH_GAME': {
-          game = this.games.find(g => g.host == socket.id);
-          if (game) {
-            game.launchGame(1000);
-          }
-          break;
+        game = this.games.find(g => g.host == socket.id);
+        if (game) {
+          game.launchGame(500);
+        }
+        break;
       }
       case 'GAME_MONITOR_DISCONNECT_PLAYER':
         removePlayer();
         break;
       case 'GAME_MONITOR_ADD_PLAYER':
-          removePlayer();
-          game = this.games.find(g => g.name == action.payload);
-          player = new Player(socket);
-          if (game) {
-            game.addPlayer(player)
-          } else {
-            game = new Game(action.payload);
-            game.addPlayer(player);
-            this.games.push(game);
-          }
-          player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
-          break;
+        removePlayer();
+        game = this.games.find(g => g.name == action.payload);
+        player = new Player(socket);
+        if (game) {
+          game.addPlayer(player)
+        } else {
+          game = new Game(action.payload);
+          game.addPlayer(player);
+          this.games.push(game);
+        }
+        game?.players.forEach(player => game && player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() }));
+        break;
+      case 'GAME_MONITOR_MOVE_DOWN':
+        player = game?.players.find(p => p.id == socket.id);
+        if (!game || !game.running || !player || !player.alive) break;
+        player.moveDown();
+        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        break;
       case 'GAME_MONITOR_MOVE_LEFT':
         player = game?.players.find(p => p.id == socket.id);
         if (!game || !game.running || !player || !player.alive) break;
@@ -66,10 +72,17 @@ export default class GamesMonitor {
         player.moveRight();
         player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
         break;
-        break;
       case 'GAME_MONITOR_ROTATE_RIGHT':
+        player = game?.players.find(p => p.id == socket.id);
+        if (!game || !game.running || !player || !player.alive) break;
+        player.rotate();
+        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
         break;
       case 'GAME_MONITOR_ROTATE_LEFT':
+        player = game?.players.find(p => p.id == socket.id);
+        if (!game || !game.running || !player || !player.alive) break;
+        player.rotateRev();
+        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
         break;
     }
   };

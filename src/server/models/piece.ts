@@ -7,10 +7,10 @@ export default class Piece {
     length: number;
     color: string;
 
-    constructor(pieceId: number, rotationNb: number) {
+    constructor(pieceId?: number, rotationNb?: number) {
 
         // DEFINE PIECE
-        switch (pieceId % 7) {
+        switch ((pieceId ?? 0) % 7) {
             // line
             case 0:
                 this.form = [
@@ -35,7 +35,7 @@ export default class Piece {
             // L
             case 2:
                 this.form = [
-                    [true, false, false],
+                    [false, false, true],
                     [true, true, true],
                     [false, false, false]
                 ]
@@ -84,12 +84,14 @@ export default class Piece {
         }
 
         // ROTATE PIECE
-        for (let i = 0; i < rotationNb % 4; i++) {
-            this.form = this.rotate();
+        for (let i = 0; i < (rotationNb ?? 0) % 4; i++) {
+            this.form = this.rotate().form;
         }
     }
 
-    rotate() {
+    rotate(): Piece {
+        let newPiece = new Piece();
+        Object.assign(newPiece, this);
         let newForm: boolean[][] = [];
         for (let i = 0; i < this.length; i++) {
             for (let y = this.length - 1; y >= 0; y--) {
@@ -99,7 +101,24 @@ export default class Piece {
                 newForm[i].push(this.form[y][i]);
             }
         }
-        return newForm;
+        newPiece.form = newForm;
+        return newPiece;
+    }
+
+    rotateRev(): Piece {
+        let newPiece = new Piece();
+        Object.assign(newPiece, this);
+        let newForm: boolean[][] = [];
+        for (let i = this.length - 1; i >= 0; i--) {
+            for (let y = 0; y < this.length; y++) {
+                if (newForm[this.length - 1 - i] == undefined) {
+                    newForm[this.length - 1 - i] = [];
+                }
+                newForm[this.length - 1 - i].push(this.form[y][i]);
+            }
+        }
+        newPiece.form = newForm;
+        return newPiece;
     }
 
     static genRandomPiece(width: number) {
@@ -112,5 +131,27 @@ export default class Piece {
             piece,
             x
         }
+    }
+
+    getStartY(): number {
+        let i = 0;
+        while (i < this.length && this.form[i].every(tile => tile))
+            ++i;
+        return i
+    }
+
+    getEndY(): number {
+        let i = this.length - 1;
+        while (i > 0 && this.form[i].every(tile => tile))
+            --i;
+        return i
+    }
+
+    getEndX(): number {
+        return this.form.reduce((acc, row) => Math.max(acc, row.lastIndexOf(true)), 0)
+    }
+
+    getStartX(): number {
+        return this.form.reduce((acc, row) => Math.min(acc, row.lastIndexOf(true)), this.length)
     }
 }
