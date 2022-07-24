@@ -8,8 +8,9 @@ import styled from 'styled-components';
 import { Action } from '@src/common/actions';
 import Player from '@src/server/models/player';
 
-const PlayerContainer = styled.div`
+const PlayerContainer = styled.div<{float?: string}>`
     display: inline-block;
+    float: ${p => p.float};
     margin: 10px;
     background-color: #919191;
     padding: 0 10px;
@@ -19,7 +20,11 @@ const PlayerContainer = styled.div`
 
 const Panels = styled.div<{ single?: boolean }>`
     float: right;
-    width: ${p => p.single ? 40 : 60}%;
+    width: 33%;
+    ${p => p.single && `
+        display: flex;
+        justify-content: center;
+    `}
     
 `
 const CenteredText = styled.div<{isTitle?: boolean}>`
@@ -42,8 +47,8 @@ const Row = styled.div`
     background-color: #171717;
 `
 
-function renderPlayer2(player: Player, other?: boolean) {
-    return <PlayerContainer>
+function renderPlayer2(player: Player, other?: boolean, float?: string) {
+    return <PlayerContainer float={float}>
     <div>
         <CenteredText isTitle>{other ? player.name : 'You'}</CenteredText>
         {...player.terrain.tiles.map((row, y) => {
@@ -70,9 +75,13 @@ function renderPlayer(game?: Game, socket?: SocketIOClient.Socket) {
     
 }
 
-function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket) {
+function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket): [JSX.Element[], JSX.Element[]] | undefined {
     let players = game?.players?.filter(p => p.id !== socket?.id && p.playing);
-    return players?.map(player => renderPlayer2(player, true))
+    if (!players) return undefined
+    let half = Math.ceil(players.length / 2);
+    const firstHalf = players.slice(0, half)
+    const secondHalf = players.slice(half)
+    return [firstHalf.map(player => renderPlayer2(player, true, 'right')), secondHalf.map(player => renderPlayer2(player, true, 'left'))]
 }
 
 const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number }) => {
@@ -132,10 +141,13 @@ const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
     return (
         <div onKeyDown={handleKey} tabIndex={0}>
             <Panels>
-                {otherPlayers}
+                {otherPlayers?.[1]}
             </Panels>
             <Panels single>
                 {renderPlayer(game, socket)}
+            </Panels>
+            <Panels>
+                {otherPlayers?.[0]}
             </Panels>
             {isHost && !game?.running && <button onClick={() => dispatch(launchGame())}>launch game</button>}
         </div>
