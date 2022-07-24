@@ -18,7 +18,7 @@ const PlayerContainer = styled.div<{float?: string}>`
     color: white;
 `
 
-const Panels = styled.div<{ single?: boolean }>`
+const Panel = styled.div<{ single?: boolean }>`
     float: right;
     width: 33%;
     ${p => p.single && `
@@ -47,6 +47,22 @@ const Row = styled.div`
     background-color: #171717;
 `
 
+const HostButton = styled.button<{ play?: boolean }>`
+    position: absolute;
+    left: calc(50% + 7px);
+    top: calc(50% ${p => p.play ? '-' : '+'} 35px);
+    transform: translate(-50%,-50%);
+    height: 60px;
+    width: 200px;
+    background-color: ${p => p.play ? '#00f200' : '#919191' };
+    border: none;
+    border-radius: 15px;
+    color: white;
+    font-weight: 600;
+    font-size: 25px;
+    cursor: pointer;
+`
+
 function renderPlayer2(player: Player, other?: boolean, float?: string) {
     return <PlayerContainer float={float}>
     <div>
@@ -69,24 +85,26 @@ function renderPlayer2(player: Player, other?: boolean, float?: string) {
 }
 
 function renderPlayer(game?: Game, socket?: SocketIOClient.Socket) {
-    let player = game?.players?.find(p => p.id == socket?.id && p.playing);
+    let player = game?.players?.find(p => p.id == socket?.id);
     if (!player) return undefined;
     return renderPlayer2(player)
     
 }
 
-function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket): [JSX.Element[], JSX.Element[]] | undefined {
-    let players = game?.players?.filter(p => p.id !== socket?.id && p.playing);
-    if (!players) return undefined
+function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket): [JSX.Element[], JSX.Element[]] {
+    let players = game?.players?.filter(p => p.id !== socket?.id);
+    if (!players) return [[<PlayerContainer float={'right'} />], [<PlayerContainer float={'left'} />]]
     let half = Math.ceil(players.length / 2);
     const firstHalf = players.slice(0, half)
     const secondHalf = players.slice(half)
     return [firstHalf.map(player => renderPlayer2(player, true, 'right')), secondHalf.map(player => renderPlayer2(player, true, 'left'))]
 }
 
-const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number }) => {
+function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number }) {
+    const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const { game, socket, refresh } = props;
-    if (!game) return <></>
+
+    let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh])
 
     React.useEffect(() => {
         if (game && socket) {
@@ -99,6 +117,8 @@ const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
             document.location.href = new_url;
         }
     }, [game]);
+
+    if (!game) return <></>
 
     const isHost = game && socket && game?.host == socket?.id;
     const dispatch: (act: Action) => void = useDispatch();
@@ -136,22 +156,58 @@ const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
                 break;
         }
     }
-    let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh])
 
     return (
         <div onKeyDown={handleKey} tabIndex={0}>
-            <Panels>
+            <Panel>
                 {otherPlayers?.[1]}
-            </Panels>
-            <Panels single>
+            </Panel>
+            <Panel single>
                 {renderPlayer(game, socket)}
-            </Panels>
-            <Panels>
+            </Panel>
+            <Panel>
                 {otherPlayers?.[0]}
-            </Panels>
-            {isHost && !game?.running && <button onClick={() => dispatch(launchGame())}>launch game</button>}
+            </Panel>
+            {isHost && !isOpen && !game?.running && <HostButton onClick={() => dispatch(launchGame())} play>PLAY</HostButton>}
+            {isHost && !isOpen && !game?.running && <HostButton onClick={() => setIsOpen(true)}>OPTIONS</HostButton>}
+            <PopUp isOpen={isOpen} toggle={() => setIsOpen(!isOpen)}/>
         </div>
     )
+}
+
+const PopUpContainer = styled.div`
+    position: absolute;
+    background-color: white;
+    top: 50%;
+    left: calc(50% + 7px);
+    height: 250px;
+    width: 500px;
+    transform: translate(-50%,-50%);
+`
+
+const OkButton = styled.button`
+    height: 35px;
+    width: 75px;
+    background-color: #00f200;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+`
+
+function PopUp(props: {
+    isOpen: boolean,
+    toggle: () => void
+}): JSX.Element {
+    return <PopUpContainer hidden={!props.isOpen}>
+        <OkButton onClick={props.toggle}>Ok</OkButton>
+    </PopUpContainer>
 }
 
 const mapStateToProps = (state: GlobalState) => {
@@ -161,5 +217,8 @@ const mapStateToProps = (state: GlobalState) => {
         socket: state.socket.socket
     }
 }
+
+
+
 
 export default connect(mapStateToProps, null)(Tetris)  
