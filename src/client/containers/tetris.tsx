@@ -21,6 +21,7 @@ const PlayerContainer = styled.div<{float?: string}>`
 const Panel = styled.div<{ single?: boolean }>`
     float: right;
     width: 33%;
+    min-height: 500px;
     ${p => p.single && `
         display: flex;
         justify-content: center;
@@ -91,20 +92,20 @@ function renderPlayer(game?: Game, socket?: SocketIOClient.Socket) {
     
 }
 
-function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket): [JSX.Element[], JSX.Element[]] {
+function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket): [JSX.Element[], JSX.Element[]] | undefined {
     let players = game?.players?.filter(p => p.id !== socket?.id);
-    if (!players) return [[<PlayerContainer float={'right'} />], [<PlayerContainer float={'left'} />]]
+    if (!players) return undefined
     let half = Math.ceil(players.length / 2);
     const firstHalf = players.slice(0, half)
     const secondHalf = players.slice(half)
     return [firstHalf.map(player => renderPlayer2(player, true, 'right')), secondHalf.map(player => renderPlayer2(player, true, 'left'))]
 }
 
-function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number }) {
+function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number, refreshmentRate?: number }) {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const { game, socket, refresh } = props;
 
-    let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh])
+    let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh, game?.players.length])
 
     React.useEffect(() => {
         if (game && socket) {
@@ -169,8 +170,14 @@ function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
                 {otherPlayers?.[0]}
             </Panel>
             {isHost && !isOpen && !game?.running && <HostButton onClick={() => dispatch(launchGame())} play>PLAY</HostButton>}
-            {isHost && !isOpen && !game?.running && <HostButton onClick={() => setIsOpen(true)}>OPTIONS</HostButton>}
-            <PopUp isOpen={isOpen} toggle={() => setIsOpen(!isOpen)}/>
+            {!isOpen && !game?.running && <HostButton onClick={() => setIsOpen(true)}>OPTIONS</HostButton>}
+            <PopUp
+                isOpen={isOpen}
+                toggle={() => setIsOpen(!isOpen)}
+                refreshmentRate={props.refreshmentRate ?? 3}
+                speed={game?.speed ?? 1000}
+                isHost={isHost ?? false}
+            />
         </div>
     )
 }
@@ -183,6 +190,8 @@ const PopUpContainer = styled.div`
     height: 250px;
     width: 500px;
     transform: translate(-50%,-50%);
+    text-align: center;
+    padding: 20px; 
 `
 
 const OkButton = styled.button`
@@ -201,11 +210,69 @@ const OkButton = styled.button`
     transform: translateX(-50%);
 `
 
+const RadioContainer = styled.div`
+    display: flex;
+    flex-grow: inherit;
+    justify-content: space-between;
+    width: 75%;
+    padding: 20px 7%;
+    border-bottom: 1px black solid;
+    margin: 20px 5.5%;
+`
+
+const Radio = styled.input`
+
+`
+
+const RadioContainer2 = styled.div`
+`
+
 function PopUp(props: {
     isOpen: boolean,
-    toggle: () => void
+    toggle: () => void,
+    refreshmentRate: number,
+    speed: number,
+    isHost: boolean
 }): JSX.Element {
+    const dispatch: (act: Action) => void = useDispatch();
+    const speedList = [
+        { value: 1000, label: '1s'},
+        { value: 750, label: '0.75s'},
+        { value: 500, label: '0.5s'},
+        { value: 250, label: '0.25s'},
+        { value: 100, label: '0.1s'},
+    ]
+
+    const refrehmentList = [
+        { value: 1, label: 'All'},
+        { value: 2, label: '1/2'},
+        { value: 3, label: '1/3'},
+        { value: 5, label: '1/5'},
+        { value: 10, label: '1/10'},
+    ]
     return <PopUpContainer hidden={!props.isOpen}>
+        {props.isHost && (
+            <>
+            Speed
+            {/* @ts-ignore */}
+                <RadioContainer onChange={e => dispatch({ type: 'SOCKET_SET_GAME_SPEED', payload: e.target.value })}>
+                    {speedList.map(({value, label}) =>
+                        <RadioContainer2 >
+                            <Radio type="radio" value={value} name="speed" checked={props.speed == value} key={`speed[${value}]`}/> {label}
+                        </RadioContainer2>
+                    )}
+                </RadioContainer>
+            </>
+        )}
+        Refreshement
+        {/* @ts-ignore */}
+            <RadioContainer onChange={e => dispatch({ type: 'SET_REFRESHMENT_RATE', payload: e.target.value })}>
+                {refrehmentList.map(({value, label}) =>
+                    <RadioContainer2 >
+                        <Radio type="radio" value={value} name="refreshment" checked={props.refreshmentRate == value} key={`refreshment[${value}]`}/> {label}
+                    </RadioContainer2>
+                )}
+            </RadioContainer>
         <OkButton onClick={props.toggle}>Ok</OkButton>
     </PopUpContainer>
 }
@@ -214,7 +281,8 @@ const mapStateToProps = (state: GlobalState) => {
     return {
         game: state.socket.game,
         refresh: state.socket.refresh,
-        socket: state.socket.socket
+        socket: state.socket.socket,
+        refreshmentRate: state.socket.refreshmentRate
     }
 }
 

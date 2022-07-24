@@ -55,13 +55,19 @@ export default class GamesMonitor {
     let player: Player | undefined = undefined;
     let playerIndex: number = -1;
     switch (action.type) {
+      case 'GAME_MONITOR_SET_GAME_SPEED':
+        if (game) {
+          game.speed = action.payload;
+          game.players.forEach(p => game && p.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() }));
+        }
+        break;
       case 'GAME_MONITOR_GET_GAME_LIST':
         socket.emit('response', { type: 'SRV_EMIT_GAME_LIST', payload: this.games.map(game => game.resume())});
         break;
       case 'GAME_MONITOR_LAUNCH_GAME': {
         game = this.games.find(g => g.host == socket.id);
         if (game) {
-          game.launchGame(500);
+          game.launchGame();
           this.emitDandlingSocket({ type: 'SRV_EMIT_GAME_LIST', payload: this.games.map(game => game.resume())});
         }
         break;
@@ -92,37 +98,37 @@ export default class GamesMonitor {
         break;
       case 'GAME_MONITOR_FALL':
         playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
-        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        if (playerIndex == -1 || !game?.players[playerIndex].alive || !game?.running) break;
         game.players[playerIndex].placePiece();
         emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_MOVE_DOWN':
         playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
-        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        if (playerIndex == -1 || !game?.players[playerIndex].alive || !game?.running) break;
         game.players[playerIndex].moveDown();
         emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_MOVE_LEFT':
-        player = game?.players.find(p => p.id == socket.id);
-        if (!game || !game.running || !player || !player.alive) break;
-        player.moveLeft();
-        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
+        if (playerIndex == -1 || !game?.players[playerIndex].alive || !game?.running) break;
+        game.players[playerIndex].moveLeft();
+        emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_MOVE_RIGHT':
         playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
-        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        if (playerIndex == -1 || !game?.players[playerIndex].alive || !game?.running) break;
         game.players[playerIndex].moveRight();
         emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_ROTATE_RIGHT':
         playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
-        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        if (playerIndex == -1 || !game?.players[playerIndex].alive || !game?.running) break;
         game.players[playerIndex].rotate();
         emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_ROTATE_LEFT':
         playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
-        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        if (playerIndex == -1 || !game?.players[playerIndex].alive || !game?.running) break;
         game.players[playerIndex].rotateRev();
         emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;

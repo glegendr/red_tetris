@@ -13,22 +13,29 @@ export type SocketState = {
   tick: number
   refresh: number
   gameList: GameResume[]
-  socket: SocketIOClient.Socket
+  socket: SocketIOClient.Socket,
+  refreshmentRate: number
 }
 
-const initSocketState = () => {
+const initSocketState = (): SocketState  => {
   const socket: SocketIOClient.Socket = io('http://localhost:3004');
 
   return {
     socket,
     gameList: [],
     tick: 0,
-    refresh: 0
+    refresh: 0,
+    refreshmentRate: 3,
   }
 }
 
 const reducer = (state: SocketState = initSocketState(), action: Action) => {
   switch (action.type) {
+    case 'SET_REFRESHMENT_RATE':
+      return {
+        ...state,
+        refreshmentRate: action.payload
+      }
     case 'SOCKET_CONNECT':
       return state
     case 'SRV_EMIT_GAME':
@@ -62,7 +69,7 @@ const reducer = (state: SocketState = initSocketState(), action: Action) => {
       return {
         ...state,
         tick: state.tick + 1,
-        refresh: state.tick % 3 == 0 || state.game?.running == false ? state.refresh + 1 : state.refresh
+        refresh: state.tick % state.refreshmentRate == 0 || state.game?.running == false ? state.refresh + 1 : state.refresh
       }
     default:
       return state

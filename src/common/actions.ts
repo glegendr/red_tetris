@@ -12,6 +12,7 @@ export type ActionType
     | 'SOCKET_ROTATE_LEFT'
     | 'SOCKET_GET_GAME_LIST'
     | 'SOCKET_FALL'
+    | 'SOCKET_SET_GAME_SPEED'
     // SERVER RESPONSE
     | 'SRV_EMIT_GAME'
     | 'SRV_EMIT_GAME_LIST'
@@ -29,8 +30,10 @@ export type ActionType
     | 'GAME_MONITOR_GET_GAME_LIST'
     | 'GAME_MONITOR_CONNECT_PLAYER'
     | 'GAME_MONITOR_FALL'
+    | 'GAME_MONITOR_SET_GAME_SPEED'
     // RANDOM
     | 'ALERT_POP'
+    | 'SET_REFRESHMENT_RATE'
 
 export type Action = {
     type: ActionType

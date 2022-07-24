@@ -10,6 +10,7 @@ export default class Game {
     pieces: [Piece, number][];
     host?: string;
     interval?: Timeout;
+    speed: number;
     running: boolean;
 
     constructor(name: string) {
@@ -29,9 +30,11 @@ export default class Game {
         this.interval = undefined;
 
         this.running = false;
+
+        this.speed = 1000;
     }
 
-    launchGame(time?: number) {
+    launchGame() {
         if (this.running) return
         this.running = true;
         let { piece, x } = Piece.genRandomPiece(10)
@@ -70,7 +73,7 @@ export default class Game {
                     running: this.running
                 }
             }))
-        }, time ?? 1000);
+        }, this.speed);
 
     }
 
@@ -87,7 +90,8 @@ export default class Game {
             players: this.players.map(p => p.short()),
             pieces: this.pieces,
             host: this.host,
-            running: this.running
+            running: this.running,
+            speed: this.speed
         }
     }
 
