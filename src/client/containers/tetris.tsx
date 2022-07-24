@@ -10,24 +10,87 @@ import Player from '@src/server/models/player';
 
 const PlayerContainer = styled.div`
     display: inline-block;
-    margin: 20px;
+    margin: 10px;
+    background-color: #919191;
+    padding: 0 10px;
+    border-radius: 15px;
+    color: white;
 `
 
-function renderPlayer(game?: Game, socket?: SocketIOClient.Socket) {
-    let player = game?.players?.find(p => p.id == socket?.id);
-    if (!player) return undefined;
+const Panels = styled.div<{ single?: boolean }>`
+    float: right;
+    width: ${p => p.single ? 40 : 60}%;
+    
+`
+const CenteredText = styled.div<{isTitle?: boolean}>`
+    text-align: center;
+    font-weight: ${p => p.isTitle ? 600 : 500};
+`
+const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean, alive: boolean }>`
+    height: ${p => p.other ? 10 : 25}px;
+    width: ${p => p.other ? 10 : 25}px;
+    background-color: ${p => p.color ? p.alive ? p.color : '#919191' :'black'};
+    border-bottom: 2px solid #171717;
+    border-right: 2px solid #171717;
+    border-left: ${p => p.x == 0 ? '2px solid #171717' : ''};
+    border-top: ${p => p.y == 0 ? '2px solid #171717' : ''};
+    border-radius: 3px;
+`;
 
-    return <PlayerContainer>{Player.fromShort(player).render()}</PlayerContainer>;
+const Row = styled.div`
+    display: flex;
+    background-color: #171717;
+`
+
+function renderPlayer2(player: Player, other?: boolean) {
+    return <PlayerContainer>
+    <div>
+        <CenteredText isTitle>{other ? player.name : 'You'}</CenteredText>
+        {...player.terrain.tiles.map((row, y) => {
+        let row_ret = row.reduce((acc: JSX.Element[], color, x) => {
+            if (!color && player.piece) {
+                if (player.piece.form[y - player.position.y]?.[x - player.position.x])
+                color = player.piece.color;
+            }
+            acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={player.alive}/>);
+            return acc;
+        }, []);
+        return <Row>{row_ret}</Row>
+        })}
+        <CenteredText isTitle>Score</CenteredText>
+        <CenteredText>{player.score}</CenteredText>
+    </div>
+    </PlayerContainer>
+}
+
+function renderPlayer(game?: Game, socket?: SocketIOClient.Socket) {
+    let player = game?.players?.find(p => p.id == socket?.id && p.playing);
+    if (!player) return undefined;
+    return renderPlayer2(player)
+    
 }
 
 function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket) {
-    let players = game?.players?.filter(p => p.id !== socket?.id);
-    return players?.map(player => <PlayerContainer>{Player.fromShort(player).render(true)}</PlayerContainer>)
+    let players = game?.players?.filter(p => p.id !== socket?.id && p.playing);
+    return players?.map(player => renderPlayer2(player, true))
 }
 
-const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket }) => {
-    const { game, socket } = props;
+const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number }) => {
+    const { game, socket, refresh } = props;
     if (!game) return <></>
+
+    React.useEffect(() => {
+        if (game && socket) {
+            var url_ob = new URL(document.URL);
+            url_ob.hash = `#${game.name}[${game.players.find(p => p.id == socket.id)?.name}]`;
+            // new url
+            var new_url = url_ob.href;
+
+            // change the current url
+            document.location.href = new_url;
+        }
+    }, [game]);
+
     const isHost = game && socket && game?.host == socket?.id;
     const dispatch: (act: Action) => void = useDispatch();
 
@@ -64,11 +127,16 @@ const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket }) => {
                 break;
         }
     }
+    let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh])
 
     return (
         <div onKeyDown={handleKey} tabIndex={0}>
-            {renderPlayer(game, socket)}
-            {renderOtherPlayer(game, socket)}
+            <Panels>
+                {otherPlayers}
+            </Panels>
+            <Panels single>
+                {renderPlayer(game, socket)}
+            </Panels>
             {isHost && !game?.running && <button onClick={() => dispatch(launchGame())}>launch game</button>}
         </div>
     )
@@ -77,6 +145,7 @@ const Tetris = (props: { game?: Game, socket?: SocketIOClient.Socket }) => {
 const mapStateToProps = (state: GlobalState) => {
     return {
         game: state.socket.game,
+        refresh: state.socket.refresh,
         socket: state.socket.socket
     }
 }

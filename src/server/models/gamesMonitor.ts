@@ -1,4 +1,4 @@
-import { Action } from "@src/common/actions";
+import { Action, ActionType } from "@src/common/actions";
 import { Socket } from "socket.io";
 import Game from "./game";
 import Player from './player'
@@ -7,6 +7,7 @@ export default class GamesMonitor {
 
   games: Game[];
   dandlingSocket: Socket[];
+  playerMap: Map<string, number>;
 
   constructor() {
     // list of all games
@@ -14,6 +15,9 @@ export default class GamesMonitor {
 
     // list of dandling Sockets
     this.dandlingSocket = []
+
+    // map of socketId and guestId
+    this.playerMap = new Map();
   }
 
   emitDandlingSocket(action: Action) {
@@ -37,8 +41,19 @@ export default class GamesMonitor {
       this.games = this.games.filter(g => g.host)
     }
 
+    const emitPlayerChange = (player: Player, game: Game, playerIndex: number) => {
+      player.socket.emit('response', {
+        type: 'SRV_EMIT_PLAYER_CHANGES' as ActionType,
+        payload: {
+            player: player.short(),
+            index: playerIndex
+          }
+      })
+    }
+
     let game: Game | undefined = this.games.find(g => g.players.some(p => p.id == socket.id));
     let player: Player | undefined = undefined;
+    let playerIndex: number = -1;
     switch (action.type) {
       case 'GAME_MONITOR_GET_GAME_LIST':
         socket.emit('response', { type: 'SRV_EMIT_GAME_LIST', payload: this.games.map(game => game.resume())});
@@ -52,6 +67,8 @@ export default class GamesMonitor {
         break;
       }
       case 'GAME_MONITOR_CONNECT_PLAYER':
+        if (this.playerMap.get(socket.id) == undefined)
+          this.playerMap.set(socket.id, this.playerMap.size + 1);
         this.dandlingSocket.push(socket);
         break;
       case 'GAME_MONITOR_DISCONNECT_PLAYER':
@@ -62,7 +79,7 @@ export default class GamesMonitor {
         let payload: { gameName: string, playerName?: string } = action.payload;
         removePlayer();
         game = this.games.find(g => g.name == payload.gameName);
-        player = new Player(socket, payload.playerName ?? `Player[${(game?.players.length ?? 0) + 1}]`);
+        player = new Player(socket, payload.playerName ?? `guest-${this.playerMap.get(socket.id)}`);
         if (game) {
           game.addPlayer(player)
         } else {
@@ -74,16 +91,16 @@ export default class GamesMonitor {
         this.emitDandlingSocket({ type: 'SRV_EMIT_GAME_LIST', payload: this.games.map(game => game.resume())});
         break;
       case 'GAME_MONITOR_FALL':
-        player = game?.players.find(p => p.id == socket.id);
-        if (!game || !game.running || !player || !player.alive) break;
-        player.placePiece();
-        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
+        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        game.players[playerIndex].placePiece();
+        emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_MOVE_DOWN':
-        player = game?.players.find(p => p.id == socket.id);
-        if (!game || !game.running || !player || !player.alive) break;
-        player.moveDown();
-        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
+        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        game.players[playerIndex].moveDown();
+        emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_MOVE_LEFT':
         player = game?.players.find(p => p.id == socket.id);
@@ -92,22 +109,22 @@ export default class GamesMonitor {
         player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
         break;
       case 'GAME_MONITOR_MOVE_RIGHT':
-        player = game?.players.find(p => p.id == socket.id);
-        if (!game || !game.running || !player || !player.alive) break;
-        player.moveRight();
-        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
+        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        game.players[playerIndex].moveRight();
+        emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_ROTATE_RIGHT':
-        player = game?.players.find(p => p.id == socket.id);
-        if (!game || !game.running || !player || !player.alive) break;
-        player.rotate();
-        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
+        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        game.players[playerIndex].rotate();
+        emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
       case 'GAME_MONITOR_ROTATE_LEFT':
-        player = game?.players.find(p => p.id == socket.id);
-        if (!game || !game.running || !player || !player.alive) break;
-        player.rotateRev();
-        player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: game.short() });
+        playerIndex = game?.players.findIndex(p => p.id == socket.id) ?? -1; 
+        if (playerIndex == -1 || !game?.players[playerIndex].alive) break;
+        game.players[playerIndex].rotateRev();
+        emitPlayerChange(game.players[playerIndex], game, playerIndex);
         break;
     }
   };

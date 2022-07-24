@@ -99,8 +99,9 @@ export default class Player {
             id: this.id,
             piece: this.piece,
             position: this.position,
-            terrain: this.terrain,
+            terrain: { tiles: this.terrain.tiles },
             alive: this.alive,
+            playing: this.playing,
             score: this.score,
             name: this.name
         }

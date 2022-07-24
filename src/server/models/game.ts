@@ -63,7 +63,13 @@ export default class Game {
                     }
                 }
             });
-            this.players.forEach(player => player.socket.emit('response', { type: 'SRV_EMIT_GAME', payload: this.short() }))
+            this.players.forEach(player => player.socket.emit('response', {
+                type: 'SRV_UPDATE_GAME',
+                payload: {
+                    players: this.players.map(p => p.short()),
+                    running: this.running
+                }
+            }))
         }, time ?? 1000);
 
     }
@@ -78,7 +84,7 @@ export default class Game {
     short() {
         return {
             name: this.name,
-            players: this.players.filter(p => p.playing).map(p => p.short()),
+            players: this.players.map(p => p.short()),
             pieces: this.pieces,
             host: this.host,
             running: this.running

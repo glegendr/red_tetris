@@ -6,6 +6,7 @@ import { alert } from './actions/alert'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { Action } from '@src/common/actions'
+// import { createLogger } from 'redux-logger'
 
 function initSocketReducer(store: any)  {
   const state: GlobalState = store.getState();
@@ -25,6 +26,7 @@ const store = createStore(
   reducer,
   applyMiddleware(
     socketIoMiddleWare,
+    // createLogger()
   )
 )
 
