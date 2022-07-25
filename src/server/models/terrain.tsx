@@ -52,7 +52,7 @@ export default class Terrain {
                 acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={alive}/>);
                 return acc;
             }, []);
-            return <Row>{row_ret}</Row>
+            return <Row key={`board-row[${y}]`}>{row_ret}</Row>
         });
     }
 

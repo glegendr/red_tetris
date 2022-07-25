@@ -7,10 +7,10 @@ export default class Piece {
     length: number;
     color: string;
 
-    constructor(pieceId?: number, rotationNb?: number) {
+    constructor(pieceId: number = 0, rotationNb: number = 0) {
 
         // DEFINE PIECE
-        switch ((pieceId ?? 0) % 7) {
+        switch (pieceId % 7) {
             // line
             case 0:
                 this.form = [
@@ -84,7 +84,7 @@ export default class Piece {
         }
 
         // ROTATE PIECE
-        for (let i = 0; i < (rotationNb ?? 0) % 4; i++) {
+        for (let i = 0; i < rotationNb % 4; i++) {
             this.form = this.rotate().form;
         }
     }
@@ -133,13 +133,6 @@ export default class Piece {
         }
     }
 
-    getStartY(): number {
-        let i = 0;
-        while (i < this.length && this.form[i].every(tile => tile))
-            ++i;
-        return i
-    }
-
     getEndY(): number {
         let i = this.length - 1;
         while (i > 0 && this.form[i].every(tile => tile))
@@ -152,6 +145,11 @@ export default class Piece {
     }
 
     getStartX(): number {
-        return this.form.reduce((acc, row) => Math.min(acc, row.lastIndexOf(true)), this.length)
+        return this.form.reduce((acc, row) => {
+            let index = row.indexOf(true);
+            if (index >= 0)
+                return Math.min(acc, index)
+            return acc
+        }, this.length)
     }
 }

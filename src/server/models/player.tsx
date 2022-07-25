@@ -59,13 +59,6 @@ export default class Player {
         this.name = name;
     }
 
-    static fromShort(player: Player): Player {
-        let ret = new Player({} as Socket, '');
-        Object.assign(ret, player);
-        ret.terrain = new Terrain(player.terrain);
-        return ret
-    }
-
     fall(): boolean {
         if (this.piece) {
             this.position.y += 1;
