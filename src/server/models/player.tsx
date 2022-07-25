@@ -159,7 +159,7 @@ export default class Player {
             this.piece = this.piece.rotate();
             while (this.piece.getEndX() + this.position.x > this.terrain.width - 1)
                 this.position.x -= 1;
-            while (this.piece.getStartX() + this.position.x < -1)
+            while (this.piece.getStartX() + this.position.x < 0)
                 this.position.x += 1;
             while (this.piece.getEndY() + this.position.y > this.terrain.height)
                 this.position.y -= 1;
@@ -171,7 +171,7 @@ export default class Player {
             this.piece = this.piece.rotateRev();
             while (this.piece.getEndX() + this.position.x > this.terrain.width - 1)
                 this.position.x -= 1;
-            while (this.piece.getStartX() + this.position.x < -1)
+            while (this.piece.getStartX() + this.position.x < 0)
                 this.position.x += 1;
             while (this.piece.getEndY() + this.position.y > this.terrain.height)
                 this.position.y -= 1;
