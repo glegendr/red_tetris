@@ -14,6 +14,7 @@ export default class Game {
     running: boolean;
 
     constructor(name: string) {
+        // game's name
         this.name = name;
 
         // list of all players
@@ -29,8 +30,10 @@ export default class Game {
         // falling timeout
         this.interval = undefined;
 
+        // is game running
         this.running = false;
 
+        // falling speed
         this.speed = 1000;
     }
 
@@ -44,6 +47,15 @@ export default class Game {
             player.reset(this.pieces[0]);
         }
 
+        this.players.forEach(player => player.socket.emit('response', {
+            type: 'SRV_UPDATE_GAME',
+            payload: {
+                players: this.players.map(p => p.short()),
+                running: this.running,
+                spectrum: player.alive ? player.getSpectrum() : undefined
+            }
+        }))
+
         this.interval = setInterval(() => {
             if (this.players.filter(p => p.playing).every(p => !p.alive) || (this.players.filter(p => p.alive && p.playing).length == 1 && this.players.filter(p => p.playing).length > 1)) {
                 this.running = false;
@@ -52,7 +64,9 @@ export default class Game {
             }
             this.players.forEach(player => {
                 if (player.alive) {
+                    player.lock = false;
                     if (player.fall()) {
+                        if (!player.alive) return;
                         player.pieceIndex += 1;
                         if (!this.pieces[player.pieceIndex]) {
                             let { piece, x } = Piece.genRandomPiece(10)
@@ -61,7 +75,7 @@ export default class Game {
                         player.piece = this.pieces[player.pieceIndex][0];
                         player.position = {
                             x: this.pieces[player.pieceIndex][1],
-                            y: 0
+                            y: 0 - this.pieces[player.pieceIndex][0].getStartY()
                         }
                     }
                 }
@@ -70,7 +84,8 @@ export default class Game {
                 type: 'SRV_UPDATE_GAME',
                 payload: {
                     players: this.players.map(p => p.short()),
-                    running: this.running
+                    running: this.running,
+                    spectrum: player.alive ? player.getSpectrum() : undefined
                 }
             }))
         }, this.speed);

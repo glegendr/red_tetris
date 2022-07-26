@@ -14,7 +14,8 @@ export type SocketState = {
   refresh: number
   gameList: GameResume[]
   socket: SocketIOClient.Socket,
-  refreshmentRate: number
+  refreshmentRate: number,
+  spectrum?: number
 }
 
 const initSocketState = (): SocketState  => {
@@ -56,20 +57,22 @@ const reducer = (state: SocketState = initSocketState(), action: Action) => {
       }
       return {
         ...state,
-        game: newGame
+        game: newGame,
+        spectrum: action.payload.spectrum
       }
     case 'SRV_UPDATE_GAME':
       if (state.game) {
         state.game = {
           ...state.game,
           players: action.payload.players,
-          running: action.payload.running
+          running: action.payload.running,
         } as Game
       }
       return {
         ...state,
         tick: state.tick + 1,
-        refresh: state.tick % state.refreshmentRate == 0 || state.game?.running == false ? state.refresh + 1 : state.refresh
+        refresh: state.tick % state.refreshmentRate == 0 || state.game?.running == false ? state.refresh + 1 : state.refresh,
+        spectrum: action.payload.spectrum
       }
     default:
       return state

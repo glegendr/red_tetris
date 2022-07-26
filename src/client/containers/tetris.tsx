@@ -32,7 +32,7 @@ const CenteredText = styled.div<{isTitle?: boolean}>`
     text-align: center;
     font-weight: ${p => p.isTitle ? 600 : 500};
 `
-const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean, alive: boolean }>`
+const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean, alive: boolean, spectrum?: string }>`
     height: ${p => p.other ? 10 : 25}px;
     width: ${p => p.other ? 10 : 25}px;
     background-color: ${p => p.color ? p.alive ? p.color : '#919191' :'black'};
@@ -41,6 +41,12 @@ const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean,
     border-left: ${p => p.x == 0 ? '2px solid #171717' : ''};
     border-top: ${p => p.y == 0 ? '2px solid #171717' : ''};
     border-radius: 3px;
+    ${p => p.spectrum && `
+        box-shadow: ${p.x !== 0 ? `-2px 0px 0px 0px ${p.spectrum},` : ''} 0px -2px 0px 0px ${p.spectrum};
+        border-left: ${p.x == 0 && `2px solid ${p.spectrum}`};
+        border-right: 2px solid ${p.spectrum};
+        border-bottom: 2px solid ${p.spectrum};
+    `}
 `;
 
 const Row = styled.div`
@@ -64,17 +70,20 @@ const HostButton = styled.button<{ play?: boolean }>`
     cursor: pointer;
 `
 
-function renderPlayer2(player: Player, other?: boolean, float?: string) {
+function renderPlayer2(player: Player, other?: boolean, float?: string, spectrum?: number) {
     return <PlayerContainer float={float}>
     <div>
         <CenteredText isTitle>{other ? player.name : 'You'}</CenteredText>
         {...player.terrain.tiles.map((row, y) => {
         let row_ret = row.reduce((acc: JSX.Element[], color, x) => {
+            let border = undefined;
             if (!color && player.piece) {
                 if (player.piece.form[y - player.position.y]?.[x - player.position.x])
-                color = player.piece.color;
+                    color = player.piece.color;
+                else if (spectrum && player.piece.form[y - spectrum]?.[x - player.position.x])
+                    border = player.piece.color;
             }
-            acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={player.alive}/>);
+            acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={player.alive} spectrum={border}/>);
             return acc;
         }, []);
         return <Row>{row_ret}</Row>
@@ -85,10 +94,10 @@ function renderPlayer2(player: Player, other?: boolean, float?: string) {
     </PlayerContainer>
 }
 
-function renderPlayer(game?: Game, socket?: SocketIOClient.Socket) {
+function renderPlayer(game?: Game, socket?: SocketIOClient.Socket, spectrum?: number) {
     let player = game?.players?.find(p => p.id == socket?.id);
     if (!player) return undefined;
-    return renderPlayer2(player)
+    return renderPlayer2(player, undefined, undefined, spectrum)
     
 }
 
@@ -101,31 +110,14 @@ function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket): [JSX.El
     return [firstHalf.map(player => renderPlayer2(player, true, 'right')), secondHalf.map(player => renderPlayer2(player, true, 'left'))]
 }
 
-function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number, refreshmentRate?: number }) {
-    const [isOpen, setIsOpen] = React.useState<boolean>(false);
-    const { game, socket, refresh } = props;
 
-    let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh, game?.players.length])
+function checkEscapePressed(dispatch: (act: Action) => void, openOptions: () => void) {
 
-    React.useEffect(() => {
-        if (game && socket) {
-            var url_ob = new URL(document.URL);
-            url_ob.hash = `#${game.name}[${game.players.find(p => p.id == socket.id)?.name}]`;
-            // new url
-            var new_url = url_ob.href;
-
-            // change the current url
-            document.location.href = new_url;
-        }
-    }, [game]);
-
-    if (!game) return <></>
-
-    const isHost = game && socket && game?.host == socket?.id;
-    const dispatch: (act: Action) => void = useDispatch();
-
-    function handleKey(event: React.KeyboardEvent<HTMLDivElement>) {
+    const handleKey = React.useCallback((event: any) => {
         switch (event.keyCode) {
+            case 27:
+                openOptions();
+                break;
             case 32:
                 // Space
                 dispatch({ type: 'SOCKET_FALL' });
@@ -156,15 +148,49 @@ function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
                 dispatch({ type: 'SOCKET_ROTATE_LEFT' });
                 break;
         }
-    }
+    }, []);
+  
+    React.useEffect(() => {
+        document.addEventListener('keydown', handleKey);
+        
+        return () => {
+            document.removeEventListener('keydown', handleKey);
+        };
+    }, [handleKey]);
+}
+
+function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number, refreshmentRate?: number, spectrum?: number }) {
+    const [isOpen, setIsOpen] = React.useState<boolean>(false);
+    const { game, socket, refresh, spectrum } = props;
+
+    let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh, game?.players.length])
+    const isHost = game && socket && game?.host == socket?.id;
+    const dispatch: (act: Action) => void = useDispatch();
+
+    checkEscapePressed(dispatch, () => setIsOpen(!isOpen));
+
+    React.useEffect(() => {
+        if (game && socket) {
+            var url_ob = new URL(document.URL);
+            url_ob.hash = `#${game.name}[${game.players.find(p => p.id == socket.id)?.name}]`;
+            // new url
+            var new_url = url_ob.href;
+
+            // change the current url
+            document.location.href = new_url;
+        }
+    }, [game]);
+
+    if (!game) return <></>
+
 
     return (
-        <div onKeyDown={handleKey} tabIndex={0}>
+        <div>
             <Panel>
                 {otherPlayers?.[1]}
             </Panel>
             <Panel single>
-                {renderPlayer(game, socket)}
+                {renderPlayer(game, socket, spectrum)}
             </Panel>
             <Panel>
                 {otherPlayers?.[0]}
@@ -282,7 +308,8 @@ const mapStateToProps = (state: GlobalState) => {
         game: state.socket.game,
         refresh: state.socket.refresh,
         socket: state.socket.socket,
-        refreshmentRate: state.socket.refreshmentRate
+        refreshmentRate: state.socket.refreshmentRate,
+        spectrum: state.socket.spectrum
     }
 }
 

@@ -135,8 +135,15 @@ export default class Piece {
 
     getEndY(): number {
         let i = this.length - 1;
-        while (i > 0 && this.form[i].every(tile => tile))
+        while (i > 0 && this.form[i].every(tile => !tile))
             --i;
+        return i
+    }
+
+    getStartY(): number {
+        let i = 0;
+        while (i < this.length && this.form[i].every(tile => !tile))
+            ++i;
         return i
     }
 

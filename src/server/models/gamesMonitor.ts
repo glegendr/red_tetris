@@ -46,7 +46,8 @@ export default class GamesMonitor {
         type: 'SRV_EMIT_PLAYER_CHANGES' as ActionType,
         payload: {
             player: player.short(),
-            index: playerIndex
+            index: playerIndex,
+            spectrum: player.getSpectrum()
           }
       })
     }
