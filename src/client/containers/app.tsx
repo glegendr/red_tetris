@@ -14,7 +14,6 @@ const App = (props: { game?: Game }) => {
   React.useEffect(() => {
     const onHashChanged = () => {
       const hash = new URL(document.URL).hash;
-      console.log(hash);
       let { room, name } = hash.split('').reduce((acc: {room: string, name?: string, isName: boolean}, char) => {
         if (char == '[') {
           if (acc.isName)
@@ -53,10 +52,10 @@ const App = (props: { game?: Game }) => {
   }, []);
 
   return (
-    <span>
+    <div style={{ margin: -8, color: '#cd4436', fontFamily: 'Segoe UI' }}>
       <Connect />
       <Tetris />
-    </span>
+    </div>
   )
 }
 

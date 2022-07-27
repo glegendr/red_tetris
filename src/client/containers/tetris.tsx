@@ -13,7 +13,7 @@ const PlayerContainer = styled.div<{float?: string}>`
     display: inline-block;
     float: ${p => p.float};
     margin: 10px;
-    background-color: #919191;
+    background-color: #cd4436;
     padding: 0 10px;
     border-radius: 15px;
     color: white;
@@ -36,7 +36,7 @@ const CenteredText = styled.div<{isTitle?: boolean}>`
 const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean, alive: boolean, spectrum?: string }>`
     height: ${p => p.other ? 10 : 25}px;
     width: ${p => p.other ? 10 : 25}px;
-    background-color: ${p => p.color ? p.alive ? p.color : '#919191' :'black'};
+    background-color: ${p => p.color ? p.alive ? p.color : '#cd4436' :'black'};
     border-bottom: 2px solid #171717;
     border-right: 2px solid #171717;
     border-left: ${p => p.x == 0 ? '2px solid #171717' : ''};
@@ -62,7 +62,7 @@ const HostButton = styled.button<{ play?: boolean }>`
     transform: translate(-50%,-50%);
     height: 60px;
     width: 200px;
-    background-color: ${p => p.play ? '#00f200' : '#919191' };
+    background-color: ${p => p.play ? '#00f200' : '#cd4436' };
     border: none;
     border-radius: 15px;
     color: white;
