@@ -15,7 +15,8 @@ export type SocketState = {
   gameList: GameResume[]
   socket: SocketIOClient.Socket,
   refreshmentRate: number,
-  spectrum?: number
+  spectrum?: number,
+  gamepad?: number
 }
 
 const initSocketState = (): SocketState  => {
@@ -32,6 +33,11 @@ const initSocketState = (): SocketState  => {
 
 const reducer = (state: SocketState = initSocketState(), action: Action) => {
   switch (action.type) {
+    case 'SET_GAMEPAD':
+      return {
+        ...state,
+        gamepad: action.payload
+      }
     case 'SET_REFRESHMENT_RATE':
       return {
         ...state,

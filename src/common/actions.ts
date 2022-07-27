@@ -34,6 +34,7 @@ export type ActionType
     // RANDOM
     | 'ALERT_POP'
     | 'SET_REFRESHMENT_RATE'
+    | 'SET_GAMEPAD'
 
 export type Action = {
     type: ActionType

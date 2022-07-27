@@ -7,6 +7,7 @@ import { launchGame } from '../actions/socket';
 import styled from 'styled-components';
 import { Action } from '@src/common/actions';
 import Player from '@src/server/models/player';
+import Gamepad from 'react-gamepad'
 
 const PlayerContainer = styled.div<{float?: string}>`
     display: inline-block;
@@ -159,8 +160,9 @@ function checkEscapePressed(dispatch: (act: Action) => void, openOptions: () => 
     }, [handleKey]);
 }
 
-function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number, refreshmentRate?: number, spectrum?: number }) {
+function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: number, refreshmentRate?: number, spectrum?: number, gamepad?: number }) {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
+    const [localTimeout, setLocalTimeout] = React.useState<NodeJS.Timeout | undefined>(undefined);
     const { game, socket, refresh, spectrum } = props;
 
     let otherPlayers = React.useMemo(() => renderOtherPlayer(game, socket), [refresh, game?.players.length])
@@ -185,26 +187,92 @@ function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
 
 
     return (
-        <div>
-            <Panel>
-                {otherPlayers?.[1]}
-            </Panel>
-            <Panel single>
-                {renderPlayer(game, socket, spectrum)}
-            </Panel>
-            <Panel>
-                {otherPlayers?.[0]}
-            </Panel>
-            {isHost && !isOpen && !game?.running && <HostButton onClick={() => dispatch(launchGame())} play>PLAY</HostButton>}
-            {!isOpen && !game?.running && <HostButton onClick={() => setIsOpen(true)}>OPTIONS</HostButton>}
-            <PopUp
-                isOpen={isOpen}
-                toggle={() => setIsOpen(!isOpen)}
-                refreshmentRate={props.refreshmentRate ?? 3}
-                speed={game?.speed ?? 1000}
-                isHost={isHost ?? false}
-            />
-        </div>
+        <Gamepad
+            gamepadIndex={props.gamepad}
+            onAxisChange={(stickName, value) => {
+                clearInterval(localTimeout);
+                switch (stickName) {
+                    case 'LeftStickX':
+                    case 'RightStickX':
+                        if (value > 0.5) {
+                            dispatch({ type: 'SOCKET_MOVE_RIGHT' });
+                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_RIGHT' });}, 100))
+                        } else if (value < -0.5) {
+                            dispatch({ type: 'SOCKET_MOVE_LEFT' });
+                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_LEFT' });}, 100))
+                        }
+                        return
+                    case 'LeftStickY':
+                    case 'RightStickY':
+                        if (value < -0.5) {
+                            dispatch({ type: 'SOCKET_MOVE_DOWN' });
+                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_DOWN' });}, 100))
+                        }
+                        return
+                }
+            }}
+            onButtonDown={(buttonName) => {
+                console.log(buttonName);
+                switch (buttonName) {
+                    case 'Start':
+                        setIsOpen(!isOpen);
+                        return
+                    case 'A':
+                    case 'B':
+                    case 'X':
+                    case 'Y':
+                        if (game?.running) {
+                            dispatch({ type: 'SOCKET_FALL' });
+                        } else if (isHost) {
+                            dispatch(launchGame());
+                        }
+                        return
+                    case 'RT':
+                    case 'RB':
+                        dispatch({ type: 'SOCKET_ROTATE_RIGHT' });
+                        return
+                    case 'LT':
+                    case 'LB':
+                        dispatch({ type: 'SOCKET_ROTATE_LEFT' });
+                        return
+                    case 'DPadLeft':
+                        dispatch({ type: 'SOCKET_MOVE_LEFT' });
+                        return
+                    case 'DPadRight':
+                        dispatch({ type: 'SOCKET_MOVE_RIGHT' });
+                        return
+                    case 'DPadUp':
+                        dispatch({ type: 'SOCKET_ROTATE_RIGHT' });
+                        return
+                    case 'DPadDown':
+                        dispatch({ type: 'SOCKET_MOVE_DOWN' });
+                        return
+
+                }
+            }}
+        >
+            <div>
+                <Panel>
+                    {otherPlayers?.[1]}
+                </Panel>
+                <Panel single>
+                    {renderPlayer(game, socket, spectrum)}
+                </Panel>
+                <Panel>
+                    {otherPlayers?.[0]}
+                </Panel>
+                {isHost && !isOpen && !game?.running && <HostButton onClick={() => dispatch(launchGame())} play>PLAY</HostButton>}
+                {!isOpen && !game?.running && <HostButton onClick={() => setIsOpen(true)}>OPTIONS</HostButton>}
+                <PopUp
+                    isOpen={isOpen}
+                    toggle={() => setIsOpen(!isOpen)}
+                    refreshmentRate={props.refreshmentRate ?? 3}
+                    speed={game?.speed ?? 1000}
+                    gamepad={props.gamepad ?? 0}
+                    isHost={isHost ?? false}
+                />
+            </div>
+        </Gamepad>
     )
 }
 
@@ -213,7 +281,7 @@ const PopUpContainer = styled.div`
     background-color: white;
     top: 50%;
     left: calc(50% + 7px);
-    height: 250px;
+    min-height: 250px;
     width: 500px;
     transform: translate(-50%,-50%);
     text-align: center;
@@ -258,7 +326,8 @@ function PopUp(props: {
     toggle: () => void,
     refreshmentRate: number,
     speed: number,
-    isHost: boolean
+    isHost: boolean,
+    gamepad: number
 }): JSX.Element {
     const dispatch: (act: Action) => void = useDispatch();
     const speedList = [
@@ -275,6 +344,13 @@ function PopUp(props: {
         { value: 3, label: '1/3'},
         { value: 5, label: '1/5'},
         { value: 10, label: '1/10'},
+    ]
+
+    const gamepadList = [
+        { value: 0, label: '0'},
+        { value: 1, label: '1'},
+        { value: 2, label: '2'},
+        { value: 3, label: '3'},
     ]
     return <PopUpContainer hidden={!props.isOpen}>
         {props.isHost && (
@@ -299,6 +375,15 @@ function PopUp(props: {
                     </RadioContainer2>
                 )}
             </RadioContainer>
+        Controller
+        {/* @ts-ignore */}
+        <RadioContainer onChange={e => dispatch({ type: 'SET_GAMEPAD', payload: e.target.value })}>
+                {gamepadList.map(({value, label}) =>
+                    <RadioContainer2 >
+                        <Radio type="radio" value={value} name="gamepad" checked={props.gamepad == value} key={`gamepad[${value}]`}/> {label}
+                    </RadioContainer2>
+                )}
+        </RadioContainer>
         <OkButton onClick={props.toggle}>Ok</OkButton>
     </PopUpContainer>
 }
@@ -309,7 +394,8 @@ const mapStateToProps = (state: GlobalState) => {
         refresh: state.socket.refresh,
         socket: state.socket.socket,
         refreshmentRate: state.socket.refreshmentRate,
-        spectrum: state.socket.spectrum
+        spectrum: state.socket.spectrum,
+        gamepad: state.socket.gamepad
     }
 }
 

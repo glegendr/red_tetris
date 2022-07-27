@@ -71,10 +71,11 @@ export default class Player {
                     if (this.position.y + i >= this.terrain.height || this.piece.form[i].some((tile, x) => tile && this.terrain.tiles[this.position.y + i][this.position.x + x])) {
                         if (this.hasError(0, -1)) {
                             this.alive = false;
+                            this.terrain.replacePiece(this.piece, this.position.x, this.position.y - 1, this.piece.color);
                         } else {
+                            this.terrain.replacePiece(this.piece, this.position.x, this.position.y - 1, this.piece.color);
                             this.score += this.terrain.deleteLines();
                         }
-                        this.terrain.replacePiece(this.piece, this.position.x, this.position.y - 1, this.piece.color);
                         return true;
                     }
                 }
