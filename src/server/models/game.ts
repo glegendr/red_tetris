@@ -57,7 +57,7 @@ export default class Game {
         }))
 
         this.interval = setInterval(() => {
-            if (this.players.filter(p => p.playing).every(p => !p.alive) || (this.players.filter(p => p.alive && p.playing).length == 1 && this.players.filter(p => p.playing).length > 1)) {
+            if (!this.running || this.players.filter(p => p.playing).every(p => !p.alive) || (this.players.filter(p => p.alive && p.playing).length == 1 && this.players.filter(p => p.playing).length > 1)) {
                 this.running = false;
                 clearInterval(this.interval);
                 this.interval = undefined;

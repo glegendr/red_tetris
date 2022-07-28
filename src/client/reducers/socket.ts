@@ -20,7 +20,13 @@ export type SocketState = {
 }
 
 const initSocketState = (): SocketState  => {
-  const socket: SocketIOClient.Socket = io('http://localhost:3004');
+  let socket: SocketIOClient.Socket;
+  if (process.env.NODE_ENV == 'test') {
+    // @ts-ignore
+    socket = undefined;
+  } else {
+    socket = io('http://localhost:3004');
+  }
 
   return {
     socket,

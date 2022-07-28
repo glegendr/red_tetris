@@ -42,7 +42,6 @@ describe('Game', function () {
             assert.equal(res.running, false);
         })
 
-
     })
 
 })
