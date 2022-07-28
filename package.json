@@ -6,8 +6,8 @@
   "scripts": {
     "client-dev": "webpack-dev-server --open --mode development",
     "client-build": "webpack ./src/client/index.tsx ",
-    "srv-dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server/main.ts",
-    "srv-dist": "npm run client-build && ts-node -r tsconfig-paths/register ./src/server/main.ts",
+    "srv-dev": "NODE_ENV=dev nodemon --exec ts-node -r tsconfig-paths/register src/server/main.ts",
+    "srv-dist": "NODE_ENV=dev npm run client-build && ts-node -r tsconfig-paths/register ./src/server/main.ts",
     "test-client": "mocha -r ts-node/register -r tsconfig-paths/register test/client/*Test.ts",
     "test-server": "mocha -r ts-node/register -r tsconfig-paths/register test/server/*Test.ts",
     "test-all": "npm run test-client && npm run test-server",
