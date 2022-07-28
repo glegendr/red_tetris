@@ -27,6 +27,7 @@ export default class Player {
     score: number;
     name: string;
     lock: boolean;
+    lastDeleted: number;
 
     constructor(socket: Socket, name: string) {
         // current piece index in Server's piece list
@@ -61,10 +62,13 @@ export default class Player {
 
         // lock the movement
         this.lock = false;
+
+        this.lastDeleted = 0;
     }
 
     fall(): boolean {
         if (this.piece) {
+            this.lastDeleted = 0;
             this.position.y += 1;
             for (let i = this.piece.length - 1; i >= 0; i--) {
                 if (this.piece.form[i].some(tile => tile)) {
@@ -74,7 +78,9 @@ export default class Player {
                             this.terrain.replacePiece(this.piece, this.position.x, this.position.y - 1, this.piece.color);
                         } else {
                             this.terrain.replacePiece(this.piece, this.position.x, this.position.y - 1, this.piece.color);
-                            this.score += this.terrain.deleteLines();
+                            let deleted = this.terrain.deleteLines();
+                            this.lastDeleted = deleted;
+                            this.score += (deleted ** 2) * (this.terrain.width ** 2);
                         }
                         return true;
                     }
@@ -198,5 +204,17 @@ export default class Player {
         while (!this.hasError(0, fall + 1))
             fall++;
         return this.position.y + fall;
+    }
+
+    addLines(nb: number) {
+        for (let i = 0; i < nb; ++i) {
+            this.terrain.tiles.push([...new Array(this.terrain.width).fill('#a497a2')]);
+            this.position.y -= 1;
+            if (this.terrain.tiles.shift()?.some(tile => tile !== undefined)) {
+                this.alive = false;
+                return
+            }
+        }
+
     }
 }

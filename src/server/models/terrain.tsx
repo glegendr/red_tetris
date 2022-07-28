@@ -62,11 +62,11 @@ export default class Terrain {
     }
 
     deleteLines(): number {
-        let newTiles = this.tiles.filter(row => row.some(tile => tile == undefined))
-        let score = ((this.height - newTiles.length) ** 2) * (this.width ** 2)
+        let newTiles = this.tiles.filter(row => row.some(tile => tile == undefined || tile == '#a497a2'))
+        let deleted = this.height - newTiles.length
         while (newTiles.length < this.height)
             newTiles.unshift(new Array(this.width).fill(undefined));
         this.tiles = newTiles;
-        return score
+        return deleted
     }
 }

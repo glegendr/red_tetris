@@ -80,6 +80,16 @@ export default class Game {
                     }
                 }
             });
+
+            this.players.filter(p => p.playing && p.alive && p.lastDeleted > 0).forEach(player => {
+                this.players.filter(p => p.playing && p.alive).forEach(player2 => {
+                    if (player.id !== player2.id) {
+                        player2.addLines(player.lastDeleted);
+                    }
+                })
+                player.lastDeleted = 0;
+            });
+
             this.players.forEach(player => player.socket.emit('response', {
                 type: 'SRV_UPDATE_GAME',
                 payload: {
