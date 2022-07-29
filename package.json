@@ -4,16 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "client-dev": "webpack-dev-server --open --mode development",
-    "client-build": "webpack ./src/client/index.tsx ",
-    "srv-dev": "NODE_ENV=dev nodemon --exec ts-node -r tsconfig-paths/register src/server/main.ts",
-    "srv-dist": "NODE_ENV=dev npm run client-build && ts-node -r tsconfig-paths/register ./src/server/main.ts",
+    "client-dev": "NODE_ENV=development webpack-dev-server --open --mode development",
+    "srv-dev": "NODE_ENV=development nodemon --exec ts-node -r tsconfig-paths/register src/server/main.ts",
     "test-client": "mocha -r ts-node/register -r tsconfig-paths/register test/client/*Test.ts",
     "test-server": "mocha -r ts-node/register -r tsconfig-paths/register test/server/*Test.ts",
     "test-all": "npm run test-client && npm run test-server",
-    "coverage": "NODE_ENV=test nyc --include src --all -r text npm run test-all",
-    "predeploy": "npm run client-build",
-    "deploy": "gh-pages -d build"
+    "coverage": "NODE_ENV=test nyc --include src --all -r text npm run test-all"
   },
   "nyc": {
     "extension": [
