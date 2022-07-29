@@ -9,7 +9,7 @@ import { Action } from '@src/common/actions';
 import Player from '@src/server/models/player';
 import Gamepad from 'react-gamepad'
 
-const PlayerContainer = styled.div<{float?: string}>`
+const PlayerContainer = styled.div<{ float?: string }>`
     display: inline-block;
     float: ${p => p.float};
     margin: 10px;
@@ -20,7 +20,6 @@ const PlayerContainer = styled.div<{float?: string}>`
 `
 
 const Panel = styled.div<{ single?: boolean }>`
-    float: right;
     width: 33%;
     min-height: 500px;
     ${p => p.single && `
@@ -29,14 +28,14 @@ const Panel = styled.div<{ single?: boolean }>`
     `}
     
 `
-const CenteredText = styled.div<{isTitle?: boolean}>`
+const CenteredText = styled.div<{ isTitle?: boolean }>`
     text-align: center;
     font-weight: ${p => p.isTitle ? 600 : 500};
 `
 const Tile = styled.div<{ color?: string, x: number, y: number, other?: boolean, alive: boolean, spectrum?: string }>`
     height: ${p => p.other ? 10 : 25}px;
     width: ${p => p.other ? 10 : 25}px;
-    background-color: ${p => p.color ? p.alive ? p.color : '#cd4436' :'black'};
+    background-color: ${p => p.color ? p.alive ? p.color : '#cd4436' : 'black'};
     border-bottom: 2px solid #171717;
     border-right: 2px solid #171717;
     border-left: ${p => p.x == 0 ? '2px solid #171717' : ''};
@@ -57,12 +56,12 @@ const Row = styled.div`
 
 const HostButton = styled.button<{ play?: boolean }>`
     position: absolute;
-    left: calc(50% + 7px);
+    left: calc(50%);
     top: calc(50% ${p => p.play ? '-' : '+'} 35px);
     transform: translate(-50%,-50%);
     height: 60px;
     width: 200px;
-    background-color: ${p => p.play ? '#00f200' : '#cd4436' };
+    background-color: ${p => p.play ? '#00f200' : '#cd4436'};
     border: none;
     border-radius: 15px;
     color: white;
@@ -73,25 +72,25 @@ const HostButton = styled.button<{ play?: boolean }>`
 
 function renderPlayer2(player: Player, other?: boolean, float?: string, spectrum?: number) {
     return <PlayerContainer float={float}>
-    <div>
-        <CenteredText isTitle>{other ? player.name : 'You'}</CenteredText>
-        {...player.terrain.tiles.map((row, y) => {
-        let row_ret = row.reduce((acc: JSX.Element[], color, x) => {
-            let border = undefined;
-            if (!color && player.piece) {
-                if (player.piece.form[y - player.position.y]?.[x - player.position.x])
-                    color = player.piece.color;
-                else if (spectrum && player.piece.form[y - spectrum]?.[x - player.position.x])
-                    border = player.piece.color;
-            }
-            acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={player.alive} spectrum={border}/>);
-            return acc;
-        }, []);
-        return <Row>{row_ret}</Row>
-        })}
-        <CenteredText isTitle>Score</CenteredText>
-        <CenteredText>{player.score}</CenteredText>
-    </div>
+        <div>
+            <CenteredText isTitle>{other ? player.name : 'You'}</CenteredText>
+            {...player.terrain.tiles.map((row, y) => {
+                let row_ret = row.reduce((acc: JSX.Element[], color, x) => {
+                    let border = undefined;
+                    if (!color && player.piece) {
+                        if (player.piece.form[y - player.position.y]?.[x - player.position.x])
+                            color = player.piece.color;
+                        else if (spectrum && player.piece.form[y - spectrum]?.[x - player.position.x])
+                            border = player.piece.color;
+                    }
+                    acc.push(<Tile key={`board[${x}][${y}]`} x={x} y={y} color={color} other={other} alive={player.alive} spectrum={border} />);
+                    return acc;
+                }, []);
+                return <Row>{row_ret}</Row>
+            })}
+            <CenteredText isTitle>Score</CenteredText>
+            <CenteredText>{player.score}</CenteredText>
+        </div>
     </PlayerContainer>
 }
 
@@ -99,7 +98,7 @@ function renderPlayer(game?: Game, socket?: SocketIOClient.Socket, spectrum?: nu
     let player = game?.players?.find(p => p.id == socket?.id);
     if (!player) return undefined;
     return renderPlayer2(player, undefined, undefined, spectrum)
-    
+
 }
 
 function renderOtherPlayer(game?: Game, socket?: SocketIOClient.Socket): [JSX.Element[], JSX.Element[]] | undefined {
@@ -150,10 +149,10 @@ function checkEscapePressed(dispatch: (act: Action) => void, openOptions: () => 
                 break;
         }
     }, []);
-  
+
     React.useEffect(() => {
         document.addEventListener('keydown', handleKey);
-        
+
         return () => {
             document.removeEventListener('keydown', handleKey);
         };
@@ -196,17 +195,17 @@ function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
                     case 'RightStickX':
                         if (value > 0.5) {
                             dispatch({ type: 'SOCKET_MOVE_RIGHT' });
-                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_RIGHT' });}, 100))
+                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_RIGHT' }); }, 100))
                         } else if (value < -0.5) {
                             dispatch({ type: 'SOCKET_MOVE_LEFT' });
-                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_LEFT' });}, 100))
+                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_LEFT' }); }, 100))
                         }
                         return
                     case 'LeftStickY':
                     case 'RightStickY':
                         if (value < -0.5) {
                             dispatch({ type: 'SOCKET_MOVE_DOWN' });
-                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_DOWN' });}, 100))
+                            setLocalTimeout(setInterval(() => { dispatch({ type: 'SOCKET_MOVE_DOWN' }); }, 100))
                         }
                         return
                 }
@@ -252,17 +251,23 @@ function Tetris(props: { game?: Game, socket?: SocketIOClient.Socket, refresh?: 
             }}
         >
             <div>
-                <Panel>
-                    {otherPlayers?.[1]}
-                </Panel>
-                <Panel single>
-                    {renderPlayer(game, socket, spectrum)}
-                </Panel>
-                <Panel>
-                    {otherPlayers?.[0]}
-                </Panel>
+                <div style={{
+                    display: ' flex',
+                    alignItems: 'center',
+                    height: '100vh'
+                }}>
+                    <Panel>
+                        {otherPlayers?.[0]}
+                    </Panel>
+                    <Panel single>
+                        {renderPlayer(game, socket, spectrum)}
+                    </Panel>
+                    <Panel>
+                        {otherPlayers?.[1]}
+                    </Panel>
                 {isHost && !isOpen && !game?.running && <HostButton onClick={() => dispatch(launchGame())} play>PLAY</HostButton>}
                 {!isOpen && !game?.running && <HostButton onClick={() => setIsOpen(true)}>OPTIONS</HostButton>}
+                </div>
                 <PopUp
                     isOpen={isOpen}
                     toggle={() => setIsOpen(!isOpen)}
@@ -331,36 +336,36 @@ function PopUp(props: {
 }): JSX.Element {
     const dispatch: (act: Action) => void = useDispatch();
     const speedList = [
-        { value: 1000, label: '1s'},
-        { value: 750, label: '0.75s'},
-        { value: 500, label: '0.5s'},
-        { value: 250, label: '0.25s'},
-        { value: 100, label: '0.1s'},
+        { value: 1000, label: '1s' },
+        { value: 750, label: '0.75s' },
+        { value: 500, label: '0.5s' },
+        { value: 250, label: '0.25s' },
+        { value: 100, label: '0.1s' },
     ]
 
     const refrehmentList = [
-        { value: 1, label: 'All'},
-        { value: 2, label: '1/2'},
-        { value: 3, label: '1/3'},
-        { value: 5, label: '1/5'},
-        { value: 10, label: '1/10'},
+        { value: 1, label: 'All' },
+        { value: 2, label: '1/2' },
+        { value: 3, label: '1/3' },
+        { value: 5, label: '1/5' },
+        { value: 10, label: '1/10' },
     ]
 
     const gamepadList = [
-        { value: 0, label: '0'},
-        { value: 1, label: '1'},
-        { value: 2, label: '2'},
-        { value: 3, label: '3'},
+        { value: 0, label: '0' },
+        { value: 1, label: '1' },
+        { value: 2, label: '2' },
+        { value: 3, label: '3' },
     ]
     return <PopUpContainer hidden={!props.isOpen}>
         {props.isHost && (
             <>
-            Speed
-            {/* @ts-ignore */}
+                Speed
+                {/* @ts-ignore */}
                 <RadioContainer onChange={e => dispatch({ type: 'SOCKET_SET_GAME_SPEED', payload: e.target.value })}>
-                    {speedList.map(({value, label}) =>
+                    {speedList.map(({ value, label }) =>
                         <RadioContainer2 >
-                            <Radio type="radio" value={value} name="speed" checked={props.speed == value} key={`speed[${value}]`}/> {label}
+                            <Radio type="radio" value={value} name="speed" checked={props.speed == value} key={`speed[${value}]`} /> {label}
                         </RadioContainer2>
                     )}
                 </RadioContainer>
@@ -368,21 +373,21 @@ function PopUp(props: {
         )}
         Refreshement
         {/* @ts-ignore */}
-            <RadioContainer onChange={e => dispatch({ type: 'SET_REFRESHMENT_RATE', payload: e.target.value })}>
-                {refrehmentList.map(({value, label}) =>
-                    <RadioContainer2 >
-                        <Radio type="radio" value={value} name="refreshment" checked={props.refreshmentRate == value} key={`refreshment[${value}]`}/> {label}
-                    </RadioContainer2>
-                )}
-            </RadioContainer>
+        <RadioContainer onChange={e => dispatch({ type: 'SET_REFRESHMENT_RATE', payload: e.target.value })}>
+            {refrehmentList.map(({ value, label }) =>
+                <RadioContainer2 >
+                    <Radio type="radio" value={value} name="refreshment" checked={props.refreshmentRate == value} key={`refreshment[${value}]`} /> {label}
+                </RadioContainer2>
+            )}
+        </RadioContainer>
         Controller
         {/* @ts-ignore */}
         <RadioContainer onChange={e => dispatch({ type: 'SET_GAMEPAD', payload: e.target.value })}>
-                {gamepadList.map(({value, label}) =>
-                    <RadioContainer2 >
-                        <Radio type="radio" value={value} name="gamepad" checked={props.gamepad == value} key={`gamepad[${value}]`}/> {label}
-                    </RadioContainer2>
-                )}
+            {gamepadList.map(({ value, label }) =>
+                <RadioContainer2 >
+                    <Radio type="radio" value={value} name="gamepad" checked={props.gamepad == value} key={`gamepad[${value}]`} /> {label}
+                </RadioContainer2>
+            )}
         </RadioContainer>
         <OkButton onClick={props.toggle}>Ok</OkButton>
     </PopUpContainer>

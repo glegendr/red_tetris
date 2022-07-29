@@ -125,7 +125,7 @@ export default class Player {
         this.playing = true;
     }
 
-    private hasError(moveX: number, moveY: number, piece?: Piece) {
+    hasError(moveX: number, moveY: number, piece?: Piece) {
         if (piece || this.piece) {
             return (piece ?? this.piece)?.form.reduce((acc, row, y) => {
                 return acc || row.reduce((acc, tile, x) => {

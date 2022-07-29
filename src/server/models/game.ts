@@ -77,6 +77,10 @@ export default class Game {
                             x: this.pieces[player.pieceIndex][1],
                             y: 0 - this.pieces[player.pieceIndex][0].getStartY()
                         }
+                        if (player.hasError(0, 0)) {
+                            player.alive = false;
+                            player.piece = undefined;
+                        }
                     }
                 }
             });
